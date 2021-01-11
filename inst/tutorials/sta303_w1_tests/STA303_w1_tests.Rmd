@@ -1,0 +1,344 @@
+---
+title: "Common statistical tests as linear regression"
+subtitle: "STA303 Week 1"
+output: learnr::tutorial
+css: "css/learnr_303.css"
+runtime: shiny_prerendered
+---
+
+```{r setup, include = FALSE}
+install.packages("palmerpenguins", repos = "https://cloud.r-project.org")
+
+# TODO make these available again
+#remotes::install_github("rstudio/learnr", force = TRUE)
+#remotes::install_github("rstudio-education/gradethis")
+gradethis::gradethis_setup()
+
+library(learnr)
+library(knitr)
+library(palmerpenguins)
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = FALSE)
+
+# replace include=FALSE with include=TRUE (note lack of spaces) to create the version that has the answers in it
+```
+
+## Introduction
+
+You have probably encountered several statistical tests in your studies so far. 
+
+### Parametric
+**E.g. one-sample t-tests, paired t-tests, two-sample t-tests, one-way ANOVA, two-way ANOVA**  
+Parametric tests make assumptions about the distribution of the population from which our sample data have been drawn.
+
+### Non-parametric
+**E.g. Wilcoxon signed rank, Mann Whitney-U, Kruskal-Wallace**  
+Non-parametric tests do not assume that our outcome is Normally distributed. They are sometimes called 'distribution-free', but note that this is because they have fewer assumptions than parametric tests, not because they have no assumptions at all.
+
+### Aside: But why are there two types of tests?
+
+Parametric tests are more **powerful**, i.e., they have a better chance of detecting an effect if there is one there to find. So why would you ever use a less powerful test? Well, with great power comes ~~great responsibility~~ more assumptions that must be valid to proceed. 
+
+```{r, echo=FALSE, fig.align='center', out.width="50%"}
+include_graphics("images/uncleben.gif")
+```
+
+Non-parametric tests are a great choice when your outcome is an ordinal variable, is ranks, or there are problematic outliers. 
+
+For the purposes of this lesson, we're going to focus more on parametric tests, but also take a look at the corresponding non-parametric tests with the slight white lie that they are just ranked versions of their parametric companions. This approach is pretty good as long as you have a reasonable sample size.
+
+
+_Imagine this:_   
+_You're on a ship trying to spot land. **Parametric** tests are the crew member with the best eyesight, but they can be fussy and the conditions have to be right for them to work in or they will breakdown._
+
+_**Non-parametric** tests are the crew member with not quite as good eyesight, but they're more laid back about the conditions you make them work in._
+
+In the following sections we'll explore several of these tests.
+
+## One-sample t-test
+
+I am assuming you've seen this in a 200-level statistics course or equivalent. Brief recap below.
+
+### Use case
+
+You want to know if it is believable that the population mean is a certain value (our 'hypothesized value' below).
+
+### Assumptions
+1. The data are continuous (not discrete).
+2. The data are normally distributed.
+3. The sample is a simple random sample from its population. Each individual in the population has an equal probability of being selected in the sample
+
+(Do these sound familiar from linear regression?)
+
+### Hypotheses
+$$H_0: \mu = \text{hypothesized val}$$
+$$H_1: \mu \ne \text{hypothesized val}$$
+
+What are we doing? Finding the strength of evidence against the claim that the population mean is some hypothesized value
+
+The test statistic, t, is calculated as follows:
+
+$$ t = \frac{\bar{x} - \text{hypothesized val}}{s/\sqrt{n}} $$
+
+We then compare this t value to the t-distribution with degrees of freedom df = n - 1 and find the area under the curve that represents the probability of values likes ours or more extreme.
+
+
+### Example
+
+Suppose existing research suggests that the average weight of penguins is 4000 grams. You want to see if this makes sense for your new penguins data.
+
+$$H_0: \mu = 4000$$
+$$H_1: \mu \ne 4000$$
+
+The `penguins` dataset is already loaded, you you don't have to run any libraries. Use the `t.test()` function run a one-sample t-test.
+
+```{r onesamplt, exercise = TRUE}
+
+```
+
+```{r onesamplt-hint-1}
+# Run the function name with a question mark before it to get the help information for this function.
+?t.test
+```
+
+```{r onesamplt-hint-2}
+# Have you tried mu=4000?
+```
+
+```{r onesamplt-solution}
+t.test(penguins$body_mass_g, mu = 4000)
+```
+
+```{r onesamplt-check}
+grade_result(
+  pass_if(~identical(.result, t.test(penguins$body_mass_g, mu = 4000)))
+)
+```
+
+### Now as a linear model
+
+First, consider the following, what would a linear regression with no predictor variables and just an intercept tell you?
+
+Create a linear regression model called `mod1`(replace the blank below) that is an 'intercept only model' with `body_mass_g` as the predictor.
+
+```{r onesamptlin, exercise = TRUE}
+mod1 <- _________
+summary(mod1)
+```
+
+```{r onesamptlin-hint}
+# You can explicitly ask for an intercept by putting a 1 after the ~
+```
+
+
+```{r onesamptlin-solution}
+mod1 <- lm(body_mass_g ~ 1, data=penguins)
+summary(mod1)
+```
+
+```{r onesamptlin-check}
+mod1 <- lm(body_mass_g ~ 1, data=penguins)
+summary(mod1)
+grade_result(
+  pass_if(~identical(.result, summary(mod1)))
+)
+```
+
+It turns out the estimate from this linear regression is the same as the sample mean. 
+
+```{r, echo=TRUE}
+mean(penguins$body_mass_g, na.rm = TRUE) #na.rm = TRUE removes missing values
+```
+
+Now, recall that with the t-test, we calculate our test statistic by subtracting the hypothesized value from the mean. Let's run the linear model again, but on the left-hand side of the formula, subtract the hypothesized value.
+
+```{r onesamptlin2, exercise = TRUE}
+mod2 <- _________
+summary(mod2)
+```
+
+```{r onesamptlin2-hint}
+# The left-hand side should read:
+body_mass_g-4000
+```
+
+
+```{r onesamptlin2-solution}
+mod2 <- lm(body_mass_g-4000 ~ 1, data=penguins)
+summary(mod2)
+```
+
+```{r onesamptlin2-check}
+mod2 <- lm(body_mass_g-4000 ~ 1, data=penguins)
+summary(mod2)
+grade_result(
+  pass_if(~identical(.result, summary(mod2)))
+)
+```
+
+Compare the results of this `summary(mod2)` and your earlier t-test. You should see that the t value, degrees of freedom and p-value are the same for both analyses.
+
+Thus, our one sample t-test hypotheses,
+$$H_0: \mu = \text{hypothesized val}$$
+$$H_1: \mu \ne \text{hypothesized val}$$
+
+are equivalent to our linear regression hypotheses about the intercept,
+
+$$H_0: \beta_0 = \text{hypothesized val}$$
+$$H_1: \beta_0 \ne \text{hypothesized val}.$$
+
+### Wilcoxon signed-rank test
+
+While the linear regression approach to the one-sample t-test is exact, we can also approximate the Wilcoxon rank-sign test with linear regression. See below. 
+
+```{r, echo=FALSE, fig.align='center', out.width="90%"}
+include_graphics("images/wilcoxon.png")
+```
+
+Note: The above is just example from some toy data, but aims to illustrate how a t-test is treating the data and how the Wilcoxon test is treating the data. 
+
+```{r, echo=TRUE}
+# Function to get signed rank of each observation  
+signed_rank = function(x) sign(x) * rank(abs(x))
+
+# The wilcoxon test function 
+wilcox.test(penguins$body_mass_g, mu = 4000)
+
+# Equivalent linear model
+mod3 <- lm(signed_rank(penguins$body_mass_g-4000) ~ 1)
+summary(mod3)
+```
+
+[Optional] Check out the theory behind the rank transformation in section 3.0.2 https://lindeloev.github.io/tests-as-linear/#3_pearson_and_spearman_correlation
+
+### Paired sample t-test and Wilcoxon matched pair
+
+A paired t-test is equivalent to a one sample t-test if you just consider $x_{\text{diff}\ i} = x_{1i} - x_{2i}$, i.e., $x_{\text{diff}\ i}$ is the difference of the paired values for each observation, and proceed with $x_{\text{diff}\ i}$ as you would in the one sample case. Likewise for the Wilcoxon 
+
+The R code (not evaluated here) would be as follows:
+
+```{r, eval = FALSE, echo=TRUE}
+# Built-in Wilcoxon matched pairs
+wilcox.test(x1, x2, paired = TRUE)
+
+# Equivalent linear model:
+summary(lm(signed_rank(x1 - x2) ~ 1))
+```
+
+## Dummy variables
+
+Let's take a quick detour before we explore the next tests. We'll need to understand the concept of dummy variables and contrasts first.
+
+### The matrices we use for linear regression
+
+Recall that we can express our linear regression in matrix form: 
+
+$$\mathbf{y} = X\boldsymbol\beta + \boldsymbol\varepsilon$$
+
+where
+
+$$
+\mathbf{y} = \begin{pmatrix} 
+          y_1 \\\ 
+          y_2 \\\ 
+          \vdots \\\ 
+          y_n 
+          \end{pmatrix} ,
+$$
+$$
+ \boldsymbol\beta = \begin{pmatrix} \beta_0  \\\ \beta_1  \\\ \beta_2  \\\ \vdots  \\\ \beta_p \end{pmatrix}, \quad
+ \boldsymbol\varepsilon = \begin{pmatrix} \varepsilon_1  \\\ \varepsilon_2  \\\ \vdots  \\\ \varepsilon_n \end{pmatrix}
+$$
+
+and 
+
+$$X = \begin{pmatrix} \mathbf{x}^\mathsf{T}_1 \\ \mathbf{x}^\mathsf{T}_2 \\ \vdots \\ \mathbf{x}^\mathsf{T}_n \end{pmatrix}
+ = \begin{pmatrix} 1 &  x_{11} & \cdots & x_{1p} \\
+ 1 & x_{21} & \cdots & x_{2p} \\
+ \vdots & \vdots & \ddots & \vdots \\
+ 1 & x_{n1} & \cdots & x_{np}
+ \end{pmatrix}$$
+
+We often talk about **X** as the **model matrix**  (or design or regressor matrix) and it will be the focus of this section.
+
+### Getting our model matrix in R
+
+Let's start by fitting a model with `body_mass_g` as the response and `flipper_length_mm` and `species` as the predictor variables.
+
+(Note: Users of statistics use a lot of different words to refer to the same thing. Can you think of other terms people might use instead of _response_ and _predictor_?)
+
+```{r modmat1, exercise = TRUE}
+mod4 <- _________
+summary(mod4)
+```
+
+
+```{r modmat1-solution}
+mod4 <- lm(body_mass_g ~ flipper_length_mm + species, data=penguins)
+summary(mod4)
+```
+
+```{r modmat1-check}
+mod4 <- lm(body_mass_g ~ flipper_length_mm + species, data=penguins)
+summary(mod4)
+grade_result(
+  pass_if(~identical(.result, summary(mod4)))
+)
+```
+
+Now we can use the `model.matrix()` function to extract the model matrix for `mod4`.
+
+```{r modmat2, exercise=TRUE, exercise.setup = "modmat1-solution"}
+
+```
+
+```{r modmat2-hint}
+# mod4 is the only argument you need to pass to model.matrix
+```
+
+```{r modmat2-solution}
+model.matrix(mod4)
+```
+
+```{r modmat2-check}
+mod4 <- lm(body_mass_g ~ flipper_length_mm + species, data=penguins)
+summary(mod4)
+grade_result(
+  pass_if(~identical(.result, model.matrix(mod4)))
+)
+```
+
+You'll notice that even though we only had an intercept and two variables, we have four columns in our model matrix. You should also notice that R has given the columns helpful names, and that we have a column for the Chinstrap species and the Gentoo species, but not the Adelie species.
+
+Further, recall that when we are working with a categorical variables we call the different values the the variables can take ''**levels"**. I may also refer to these as factor variables, and talk about the ''levels of the factor". 
+
+What R is doing is dropping the first level (alphabetically) of the categorical variable and then creating **dummy variables** for each of the other levels.
+
+The dropped level becomes our **reference level** and this should be familiar from interpreting summary output in previous courses where you have conducted multiple linear regressions with categorical variables. 
+
+A dummy variable is also called an indicator variable, and it *indicates* whether or not the given observation takes that level or not. I.e., if the 40th penguin in this dataset had a 1 in the speciesGentoo column, then I know it is a Gentoo penguin, and that it won't have a 1 in the speciesChinstrap column because each penguin can only have one species.
+
+More generally, the sum across the row of the dummy variables for one categorical variable will either be 0 (if that observation has the reference level) or 1 (not the reference level) but you will never have more than one 'one' amongst the dummies for a given categorical variable.
+
+#### Why do we have to drop one of the levels?
+
+You may recall that for
+
+
+### Contrasts
+
+#### Dummy coding
+
+#### Simple coding
+
+#### Deviation coding
+
+## Two-sample t-tests
+
+## ANOVA
+Back to to the tests! 
+
+## Credits
+
+Credit to **Jonas Kristoffer Lindeløv** for the excellent resource this resource is based on. [There are more examples there than we will cover in this course.](https://lindeloev.github.io/tests-as-linear/)
