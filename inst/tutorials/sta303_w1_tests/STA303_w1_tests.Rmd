@@ -10,8 +10,8 @@ runtime: shiny_prerendered
 install.packages("palmerpenguins", repos = "https://cloud.r-project.org")
 
 # TODO make these available again
-#remotes::install_github("rstudio/learnr", force = TRUE)
-#remotes::install_github("rstudio-education/gradethis")
+remotes::install_github("rstudio/learnr", force = TRUE)
+remotes::install_github("rstudio-education/gradethis")
 gradethis::gradethis_setup()
 
 library(learnr)
@@ -65,7 +65,7 @@ I am assuming you've seen this in a 200-level statistics course or equivalent. B
 You want to know if it is believable that the population mean is a certain value (our 'hypothesized value' below).
 
 ### Assumptions
-1. The data are continuous (not discrete).
+1. The data are continuous.
 2. The data are normally distributed.
 3. The sample is a simple random sample from its population. Each individual in the population has an equal probability of being selected in the sample
 
@@ -75,7 +75,7 @@ You want to know if it is believable that the population mean is a certain value
 $$H_0: \mu = \text{hypothesized val}$$
 $$H_1: \mu \ne \text{hypothesized val}$$
 
-What are we doing? Finding the strength of evidence against the claim that the population mean is some hypothesized value
+What are we doing? Finding the strength of evidence against the claim that the population mean is some hypothesized value.
 
 The test statistic, t, is calculated as follows:
 
@@ -233,34 +233,34 @@ Let's take a quick detour before we explore the next tests. We'll need to unders
 ### The matrices we use for linear regression
 
 Recall that we can express our linear regression in matrix form: 
-
-$$\mathbf{y} = X\boldsymbol\beta + \boldsymbol\varepsilon$$
-
-where
+  
+  $$\mathbf{y} = X\boldsymbol\beta + \boldsymbol\varepsilon$$
+  
+  where
 
 $$
-\mathbf{y} = \begin{pmatrix} 
-          y_1 \\\ 
-          y_2 \\\ 
-          \vdots \\\ 
-          y_n 
-          \end{pmatrix} ,
+  \mathbf{y} = \begin{pmatrix} 
+y_1 \\\ 
+y_2 \\\ 
+\vdots \\\ 
+y_n 
+\end{pmatrix} ,
 $$
 $$
- \boldsymbol\beta = \begin{pmatrix} \beta_0  \\\ \beta_1  \\\ \beta_2  \\\ \vdots  \\\ \beta_p \end{pmatrix}, \quad
- \boldsymbol\varepsilon = \begin{pmatrix} \varepsilon_1  \\\ \varepsilon_2  \\\ \vdots  \\\ \varepsilon_n \end{pmatrix}
+  \boldsymbol\beta = \begin{pmatrix} \beta_0  \\\ \beta_1  \\\ \beta_2  \\\ \vdots  \\\ \beta_p \end{pmatrix}, \quad
+\boldsymbol\varepsilon = \begin{pmatrix} \varepsilon_1  \\\ \varepsilon_2  \\\ \vdots  \\\ \varepsilon_n \end{pmatrix}
 $$
-
-and 
+  
+  and 
 
 $$X = \begin{pmatrix} \mathbf{x}^\mathsf{T}_1 \\ \mathbf{x}^\mathsf{T}_2 \\ \vdots \\ \mathbf{x}^\mathsf{T}_n \end{pmatrix}
- = \begin{pmatrix} 1 &  x_{11} & \cdots & x_{1p} \\
- 1 & x_{21} & \cdots & x_{2p} \\
- \vdots & \vdots & \ddots & \vdots \\
- 1 & x_{n1} & \cdots & x_{np}
- \end{pmatrix}$$
-
-We often talk about **X** as the **model matrix**  (or design or regressor matrix) and it will be the focus of this section.
+= \begin{pmatrix} 1 &  x_{11} & \cdots & x_{1p} \\
+1 & x_{21} & \cdots & x_{2p} \\
+\vdots & \vdots & \ddots & \vdots \\
+1 & x_{n1} & \cdots & x_{np}
+\end{pmatrix}$$
+  
+  We often talk about **X** as the **model matrix**  (or design or regressor matrix) and it will be the focus of this section.
 
 ### Getting our model matrix in R
 
@@ -321,23 +321,174 @@ A dummy variable is also called an indicator variable, and it *indicates* whethe
 
 More generally, the sum across the row of the dummy variables for one categorical variable will either be 0 (if that observation has the reference level) or 1 (not the reference level) but you will never have more than one 'one' amongst the dummies for a given categorical variable.
 
-#### Why do we have to drop one of the levels?
+#### [Unassessed aside] Why do we have to drop one of the levels?
 
-You may recall that for
+You may recall that for the matrix calculations required to get our vector of $\beta$s, we need to be able to invert X our matrix. We can only invert linearly independent matrices and if we have the intercept AND dummies for all the levels of the categorical variable, our matrix will be linearly dependent.
+
+## Two means 
+
+Back to tests!
+
+Independent t-tests let you compare two means. I am assuming you've seen this in a 200-level statistics course or equivalent. Brief recap below.
+
+### Use case
+
+You want to know if it is believable that two independent groups have the same population mean.
+
+### Assumptions
+
+1. The data are continuous.
+2. The data are normally distributed (in each group).
+3. Each group is a simple random sample from its population. Each individual in the population has an equal probability of being selected in the sample
+4. The variances for the groups are equal. 
+
+Notice that these are the same assumptions as the one-sample t-test, but with the equality of variances assumption added.
+
+### Hypotheses
+
+$$H_0: \mu_1 = \mu_2$$
+$$H_1: \mu_1 \ne \mu_2$$
+
+What are we doing? Finding the strength of evidence against the claim that the population means for both groups are the same. This differs from the one sample test because we have uncertainty about BOTH values here. Both are population parameters that we don't know. 
+
+The test statistic, t, is calculated as follows:
+
+$$ t = \frac{\bar{x_1} - \bar{x_2}}{\sqrt{s^2(\frac{1}{n_1} + \frac{1}{n_2})}} $$
+
+We then compare this t value to the t-distribution with degrees of freedom $df = n_1 + n_2 - 2$ and find the area under the curve that represents the probability of values likes ours or more extreme.
 
 
-### Contrasts
+### Example
 
-#### Dummy coding
+Conduct an independent t-test to test if the mean of `body_mass_g` is the same for male and female penguins (`sex`). Add your code below. Note: you must set `, var.equal = TRUE` as one of the arguments for it two be the independent t-test. If you don't set this we are conducting a *Welch's t-test*. I won't be covering this, but it is covered in the source credited at the end of this activity.
 
-#### Simple coding
+```{r twosamp, exercise = TRUE}
 
-#### Deviation coding
+```
 
-## Two-sample t-tests
+```{r twosamp-hint-1}
+# data = penguins
+```
+
+```{r twosamp-hint-2}
+# because our data is long, we need to do the below 
+# instead of body_mass_g, sex (comma vs tilde)
+# body_mass_g ~ sex
+```
+
+```{r twosamp-solution}
+t.test(body_mass_g ~ sex, data = penguins, var.equal = TRUE)
+```
+
+```{r twosamp-check}
+grade_result(
+  pass_if(~identical(.result, t.test(body_mass_g ~ sex, data = penguins, , var.equal = TRUE)))
+)
+```
+
+Now, based on what we've learned, write a linear model using the `lm()` function to do the same this as our independent t-test. Save the model as `mod5`.
+
+```{r twosamplin, exercise = TRUE}
+mod5 <- __________
+summary(mod5)
+```
+
+```{r twosamplin-hint}
+# body_mass_g ~ sex
+```
+
+```{r twosamplin-solution}
+mod5 <- lm(body_mass_g ~ sex, data = penguins)
+summary(mod5)
+```
+
+```{r twosamplin-check}
+penguins <- dplyr::filter(penguins, !is.na(sex))
+mod5 <- lm(body_mass_g ~ sex, data = penguins)
+
+grade_result(
+  pass_if(~identical(.result, summary(mod5)))
+)
+```
+
+Take a moment to match up parts of the outputs that are the same. There is a difference here in that the sign of the test statistics differs. That does not matter as out t-distribution is symmetrical and we're doing a two-tailed test. 
+
+```{r mod5matrix, echo=FALSE}
+question("How many columns does the model matrix for mod5 have? (You should be able to answer this without running any code.)",
+  answer("1"),
+  answer("2", correct = TRUE),
+  answer("3"),
+  answer("Impossible to say")
+)
+```
+
+### Mann-Whitney U
+Similar idea to before, except for this test it is just rank not signed rank.
+
+```{r, echo=TRUE}
+# Wilcoxon / Mann-Whitney U (multiple names)
+wilcox.test(body_mass_g ~ sex, data = penguins)
+
+# As linear model with our dummy-coded group_y2:
+summary(lm(rank(body_mass_g) ~ sex, data = penguins))
+```
 
 ## ANOVA
-Back to to the tests! 
+
+### Use case
+
+You've probably seen 'ANOVA' in the context of model comparison, but it is also a popular test in psychology and other disciplines. 
+
+Let's look specifically at one-way ANOVA (or the F-test). It tests if all the means for several groups (more than 2) are the same or if at least one is different. 
+
+I hope this sounds a bit like the next evolution from the independent t-test...
+
+(+ 1000 stats respect points to anyone who draws Pokemon-esque evolutions of these three tests...with regression as the mega-evolution...)
+
+### Assumptions
+
+And it just so happens that the assumptions for the one-way ANOVA (also called the F-test) are EXACTLY the same as for the independent t-test
+
+```{r, echo=FALSE, fig.align='center', out.width="50%"}
+include_graphics("images/meagain.gif")
+```
+
+
+1. The data are continuous.
+2. The data are normally distributed (in each group).
+3. Each group is a simple random sample from its population. Each individual in the population has an equal probability of being selected in the sample
+4. The variances for the groups are equal. 
+
+### Hypotheses
+
+$$H_0: \mu_1 = \mu_2 = ... = \mu_k $$
+
+$$H_1: \text{at least one }\mu \text{ differs from the others} $$
+
+### Example
+
+Let's now look at body mass across species. Suppose we wanted to know if was believable that the the means body mass in grams was the same across all three species. This is when we could fit a quick ANOVA to test this. The `aov()` allows us to do this.
+
+```{r, echo = TRUE}
+summary(aov(body_mass_g ~ species, data = penguins))
+```
+
+That looks a lot like the output from calling summary on `lm()`...in fact, aov is just a wrapper for lm! Which means it has been linear regression the whole time. 
+
+```{r dummies, echo=FALSE}
+question("Suppose two more penguin species were included and we got a new dataset called `new_penguins` with all five species. If we wanted to see if all 5 species had the same average body mass, which of the following analyses would be equivalent?",
+  answer("Mann-Whitney U test"),
+  answer("One-way ANOVA", correct = TRUE),
+  answer("lm(body_mass_g ~ species, data = new_penguins)", correct = TRUE),
+  answer("Linear regression with body_mass_g as the response and 5 dummy variables indicating species")
+)
+```
+
+
+### We'll stop here and talk further about this particular topic in class this week. 
+
+Your next topic is [reproducible examples (reprexes)](https://q.utoronto.ca/courses/204826/pages/w1-reproducible-examples-reprex?module_item_id=2184624).
+
 
 ## Credits
 
