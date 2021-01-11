@@ -120,7 +120,7 @@ grade_result(
 
 First, consider the following, what would a linear regression with no predictor variables and just an intercept tell you?
 
-Create a linear regression model called `mod1`(replace the blank below) that is an 'intercept only model' with `body_mass_g` as the predictor.
+Create a linear regression model called `mod1`(replace the blank below) that is an 'intercept only model' with `body_mass_g` as the response.
 
 ```{r onesamptlin, exercise = TRUE}
 mod1 <- _________
