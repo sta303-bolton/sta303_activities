@@ -11,10 +11,11 @@ install.packages("palmerpenguins", repos = "https://cloud.r-project.org")
 
 # TODO make these available again
 remotes::install_github("rstudio/learnr", force = TRUE)
+library(learnr)
 remotes::install_github("rstudio-education/gradethis")
 gradethis::gradethis_setup()
 
-library(learnr)
+
 library(knitr)
 library(palmerpenguins)
 library(tidyverse)
