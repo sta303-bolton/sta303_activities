@@ -10,9 +10,9 @@ runtime: shiny_prerendered
 install.packages("palmerpenguins", repos = "https://cloud.r-project.org")
 
 # TODO make these available again
-#remotes::install_github("rstudio/learnr", force = TRUE)
-#remotes::install_github("rstudio-education/gradethis")
-#gradethis::gradethis_setup()
+remotes::install_github("rstudio/learnr", force = TRUE)
+remotes::install_github("rstudio-education/gradethis")
+gradethis::gradethis_setup()
 
 library(learnr)
 library(knitr)
