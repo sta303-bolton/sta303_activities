@@ -128,7 +128,7 @@ $(document).ready(function () {
 <p>I would recommend that one member of the team shares their screen with the rest of the team and shows this activity where you can see the question and options.</p>
 <p>Note 1: In the Team Up! activity you will just see the letters for the questions, not the options themselves.</p>
 <p>Note 2: There are hints for some questions, but if you get really stuck, please use the ‘Ask for Help’ option in Zoom.</p>
-<p>Question 1 to 7 refer to the TV show data discussed.</p>
+<p>Question 1 to 6 refer to the TV show data discussed in the next tab. Question 7, 8 and 9 are self-contained.</p>
 </div>
 <div id="section-the-data" class="section level2">
 <h2>The data</h2>
@@ -143,22 +143,34 @@ library(lubridate) # to make it easy to work with dates
 
 url &lt;- &quot;https://raw.githubusercontent.com/TheEconomist/graphic-detail-data/master/data/2018-11-24_tv-ratings/IMDb_Economist_tv_ratings.csv&quot;
 
-tv_data &lt;- read_csv(url)
-
-head(tv_data, n = 10)
-
-glimpse(tv_data)</code></pre>
-<p>Each row (i.e., observation) is an episode of TV show.</p>
-<p>Suppose we are interested in investigating <code>decade</code> (decade that the TV show was released) and <code>rating</code> the <code>av_rating</code> (average rating per episode).</p>
+tv_data &lt;- read_csv(url)</code></pre>
+<pre class="r"><code>head(tv_data, n = 10)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["titleId"],"name":[1],"type":["chr"],"align":["left"]},{"label":["seasonNumber"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["title"],"name":[3],"type":["chr"],"align":["left"]},{"label":["date"],"name":[4],"type":["date"],"align":["right"]},{"label":["av_rating"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["share"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["genres"],"name":[7],"type":["chr"],"align":["left"]}],"data":[{"1":"tt2879552","2":"1","3":"11.22.63","4":"2016-03-10","5":"8.4890","6":"0.51","7":"Drama,Mystery,Sci-Fi"},{"1":"tt3148266","2":"1","3":"12 Monkeys","4":"2015-02-27","5":"8.3407","6":"0.46","7":"Adventure,Drama,Mystery"},{"1":"tt3148266","2":"2","3":"12 Monkeys","4":"2016-05-30","5":"8.8196","6":"0.25","7":"Adventure,Drama,Mystery"},{"1":"tt3148266","2":"3","3":"12 Monkeys","4":"2017-05-19","5":"9.0369","6":"0.19","7":"Adventure,Drama,Mystery"},{"1":"tt3148266","2":"4","3":"12 Monkeys","4":"2018-06-26","5":"9.1363","6":"0.38","7":"Adventure,Drama,Mystery"},{"1":"tt1837492","2":"1","3":"13 Reasons Why","4":"2017-03-31","5":"8.4370","6":"2.38","7":"Drama,Mystery"},{"1":"tt1837492","2":"2","3":"13 Reasons Why","4":"2018-05-18","5":"7.5089","6":"2.19","7":"Drama,Mystery"},{"1":"tt0285331","2":"1","3":"24","4":"2002-02-16","5":"8.5641","6":"6.67","7":"Action,Crime,Drama"},{"1":"tt0285331","2":"2","3":"24","4":"2003-02-09","5":"8.7028","6":"7.13","7":"Action,Crime,Drama"},{"1":"tt0285331","2":"3","3":"24","4":"2004-02-09","5":"8.7173","6":"5.88","7":"Action,Crime,Drama"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>glimpse(tv_data)</code></pre>
+<pre><code>## Rows: 2,266
+## Columns: 7
+## $ titleId      &lt;chr&gt; &quot;tt2879552&quot;, &quot;tt3148266&quot;, &quot;tt3148266&quot;, &quot;tt3148266&quot;, &quot;tt3…
+## $ seasonNumber &lt;dbl&gt; 1, 1, 2, 3, 4, 1, 2, 1, 2, 3, 4, 5, 6, 7, 8, 1, 1, 1, 1,…
+## $ title        &lt;chr&gt; &quot;11.22.63&quot;, &quot;12 Monkeys&quot;, &quot;12 Monkeys&quot;, &quot;12 Monkeys&quot;, &quot;1…
+## $ date         &lt;date&gt; 2016-03-10, 2015-02-27, 2016-05-30, 2017-05-19, 2018-06…
+## $ av_rating    &lt;dbl&gt; 8.4890, 8.3407, 8.8196, 9.0369, 9.1363, 8.4370, 7.5089, …
+## $ share        &lt;dbl&gt; 0.51, 0.46, 0.25, 0.19, 0.38, 2.38, 2.19, 6.67, 7.13, 5.…
+## $ genres       &lt;chr&gt; &quot;Drama,Mystery,Sci-Fi&quot;, &quot;Adventure,Drama,Mystery&quot;, &quot;Adve…</code></pre>
+<p>Each row (i.e., observation) is a season of TV show.</p>
+<p>Suppose we are interested in investigating the association between when an season was released (<code>decade</code>, the decade that the TV show was released, or <code>date</code>, the actual date) and <code>av_rating</code> (average rating per season).</p>
 </div>
 </div>
 <div id="section-question-1" class="section level2">
 <h2>Question 1</h2>
 <div id="section-assumptions" class="section level3">
 <h3>Assumptions</h3>
-<p>Carefeully consider the <code>head</code> and <code>glimpse</code> of the data provided in the data section and the plot below.</p>
+<p>Carefully consider the <code>head</code> and <code>glimpse</code> of the data provided in the data section and the plot below.</p>
 <p><img src="STA303_w1_class_files/figure-html/scatterplot-1.png" width="624" /></p>
-<p>Suppose you wish to use fit a model to predict average episode rating (<code>av_rating</code>) from <code>date</code> alone. Using just the information you ahve so far, which ONE of the following comments is most appropriate?</p>
+<p>Suppose you wish to use fit a model to predict average season rating (<code>av_rating</code>) from <code>date</code> alone. Using just the information you have so far, which ONE of the following comments is most appropriate?</p>
 <p><strong> A. Linear regression seems appropriate.<br />
 B. Linear regression does not seem appropriate due to the independence assumption being violated.<br />
 C. Linear regression does not seem appropriate due to the equality of variance assumption being violated.<br />
@@ -170,10 +182,17 @@ D. Linear regression does not seem appropriate due to the linearity assumption b
 <h2>Question 2</h2>
 <div id="section-t-test" class="section level3">
 <h3>t-test</h3>
-<p>Suppose you talk to a TV critic and they suggest that in industry there is a common belief that the average ‘average’ rating for TV shows in the 2010s was 8.1. (Note the careful language, we are working with data aggregated at the episode level.)</p>
-<p>Restrict the data to just the episode from 2010. (If you don’t know how to do this, there is a hint). Run a one sample t-test to test the claim from the TV critic.</p>
+<p>Suppose you talk to a TV critic and they suggest that in industry there is a common belief that the average ‘average’ rating for TV shows in the 2010s was 8.1. (Note the careful language, we are working with data aggregated at the season level.)</p>
+<p>Restrict the data to just the seasons from 2010. (If you don’t know how to do this, there is a hint). Run a one sample t-test to test the claim from the TV critic.</p>
 <div class="tutorial-exercise" data-label="onetest" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <script type="application/json" data-ui-opts="1">{"engine":"r","has_checker":false,"caption":"R code"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="onetest-hint-1" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># You can get just the 2010 data with this code
+just2010 &lt;- filter(tv_data_edit, decade == &quot;2010&quot;)</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="onetest-hint-2" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># What is your null hypothesis here? Rember that you use mu = hypothesised value (insert valeu) to represent your hypothesised value</code></pre>
 </div>
 <p>Which of the following is the best conclusion based on the result of your t-test?</p>
 <p><strong> A. We have no evidence against the claim that the average, average rating is 8.1.<br />
@@ -186,79 +205,133 @@ D. The <code>t.test</code> functions produces an error due to a violation of Nor
 <h2>Question 3</h2>
 <div id="section-toy-data" class="section level3">
 <h3>Toy data</h3>
-<p>Let’s take a moment to do something very simple. I have pulled five observations from each decade to plot</p>
+<p>Let’s take a moment to do something very simple. I have pulled five observations from each decade to plot.</p>
 <p><img src="STA303_w1_class_files/figure-html/simpleplot-1.png" width="600" /></p>
 </div>
 <div id="section-how-do-we-make-sense-of-this-with-linear-regression" class="section level3">
 <h3>How do we make sense of this with linear regression?</h3>
-<p>Let’s fit a line to each group seperately.</p>
-<pre><code>##  mu1990  mu2000  mu2010 
-## 7.71498 8.02172 8.44652</code></pre>
+<p>Let’s start by fitting a line to each group separately. (Aside: if you interpreted each of these as a one sample t-test, you’d be testing $H_0: </p>
+<pre class="r"><code>sep_mod &lt;- c(
+  lm(av_rating~1, filter(simple, decade == 1990))$coef,
+  lm(av_rating~1, filter(simple, decade == 2000))$coef,
+  lm(av_rating~1, filter(simple, decade == 2010))$coef
+  )
+
+names(sep_mod) &lt;- c(&quot;xbar1990&quot;, &quot;xbar2000&quot;, &quot;xbar2010&quot;)
+
+sep_mod</code></pre>
+<pre><code>## xbar1990 xbar2000 xbar2010 
+##  7.71498  8.02172  8.44652</code></pre>
 <p>Hopefully you agree that the intercept of each of these ‘intercept only’ models are the means of each group.</p>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":["decade"],"name":[1],"type":["chr"],"align":["left"]},{"label":["mean"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"1990","2":"7.71498"},{"1":"2000","2":"8.02172"},{"1":"2010","2":"8.44652"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-<p><img src="STA303_w1_class_files/figure-html/unnamed-chunk-6-1.png" width="624" /></p>
-<p>Now suppose I claim that we can desribe all 15 points with this equation:</p>
-<p><span class="math display">\[y_i = d_{1}\mu_{1990} + d_{2}\mu_{2000} + d_{3}\mu_{2010} + \epsilon_i\]</span></p>
+<p><img src="STA303_w1_class_files/figure-html/unnamed-chunk-7-1.png" width="624" /></p>
+<p>Now suppose I claim that we can describe all 15 points with this equation:</p>
+<p><span class="math display">\[y_i = d_{1}\bar{x}_{1990} + d_{2}\bar{x}_{2000} + d_{3}\bar{x}_{2010} + \epsilon_i\]</span></p>
 <p>Where <span class="math inline">\(\epsilon_i \sim \text{N}(0, \sigma)\)</span>.</p>
 <p>Which ONE of the following would have to be true for this to be true?</p>
-<p><strong> A. <span class="math inline">\(d_1\)</span> would be a column of FIFTEEN 1s and then <span class="math inline">\(d_2\)</span> and <span class="math inline">\(d_3\)</span> would be columns of 0s and 1s, and take th value 1 when the observation is from 2000 and 2010 respectively.<br />
+<p><strong> A. <span class="math inline">\(d_1\)</span> would be a column of FIFTEEN 1s and then <span class="math inline">\(d_2\)</span> and <span class="math inline">\(d_3\)</span> would be columns of 0s and 1s, and take the value 1 when the observation is from 2000 and 2010 respectively.<br />
 B. There are infinite possible combinations of three <span class="math inline">\(d\)</span> vectors for which this would be true, so as long as it is any one of those, this will be true.<br />
-C. Each <span class="math inline">\(d\)</span> would have to be a vector of FIVE 0s and 1s, and take the value 1 when the observation is the decade indicaated by the <span class="math inline">\(\mu_{year}\)</span> it is multiplied by.<br />
+C. Each <span class="math inline">\(d\)</span> would have to be a vector of FIVE 0s and 1s, and take the value 1 when the observation is the decade indicated by the <span class="math inline">\(\mu_{year}\)</span> it is multiplied by.<br />
 D. Each <span class="math inline">\(d\)</span> would have to be a vector of FIFTEEN 0s and 1s, and take the value 1 when the observation is that decade. </strong></p>
-</div>
-</div>
-<div id="section-question-3-1" class="section level2">
-<h2>Question 3</h2>
-<p>Which ONE of these equations is equivalent to <span class="math inline">\(y_i = d_{1990}\mu_1 +d_{2000}\mu_2 + d_{2010}\mu_3 + \epsilon_i\)</span>?</p>
-<p>A. <span class="math inline">\(y_i = \mu_1 + d_{2000}(\mu_2-\mu_1) + d_{2010}(\mu_3-\mu_1) + \epsilon_i\)</span><br />
-B. <span class="math inline">\(y_i = \mu_1 + d_{2000}(\mu_2-\mu_1-\mu_3) + d_{2010}(\mu_3-\mu_1-\mu_2) + \epsilon_i\)</span><br />
-C. <span class="math inline">\(y_i = (\mu_1 + \mu_2 + \mu_3)*(-d_{1990} - d_{2000} - d_{2010})\)</span><br />
-D. <span class="math inline">\(y_i = d_{1990}(\mu_1-\mu_3) + d_{2000}(\mu_2-\mu_1) + d_{2010}(\mu_3-\mu_1) + \epsilon_i\)</span>"</p>
-<p><img src="STA303_w1_class_files/figure-html/unnamed-chunk-7-1.png" width="500" /></p>
-<ol style="list-style-type: upper-alpha">
-<li></li>
-</ol>
-<div id="section-interpretting-a-linear-model" class="section level3">
-<h3>Interpretting a linear model</h3>
-<div class="tutorial-exercise" data-label="interpret" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<script type="application/json" data-ui-opts="1">{"engine":"r","has_checker":false,"caption":"R code"}</script>
-</div>
-<p><img src="STA303_w1_class_files/figure-html/unnamed-chunk-8-1.png" width="624" /></p>
 </div>
 </div>
 <div id="section-question-4" class="section level2">
 <h2>Question 4</h2>
+<div id="section-equations" class="section level3">
+<h3>Equations</h3>
+<p>Which ONE of these equations is equivalent to <span class="math inline">\(y_i = d_{1}\bar{x}_{1990} +d_{2}\bar{x}_{2000} + d_{3}\bar{x}_{2010} +\epsilon_i\)</span>?</p>
+<p>A. <span class="math inline">\(y_i = \bar{x}_{1990} + d_{2}(\bar{x}_{2000}-\bar{x}_{1990}) + d_{3}(\ \bar{x}_{2010}-\bar{x}_{1990}) +\epsilon_i\)</span><br />
+B. <span class="math inline">\(y_i = \bar{x}_{1990} + d_{2}(\bar{x}_{2000}-\bar{x}_{1990}-\bar{x}_{2010}) + d_{3}(\bar{x}_{2010}-\bar{x}_{1990}-\bar{x}_{2000})+\epsilon_i\)</span><br />
+C. <span class="math inline">\(y_i = (\bar{x}_{1990} +\bar{x}_{2000} + \bar{x}_{2010})*(-d_{1} - d_{2} - d_{3})\)</span><br />
+D. <span class="math inline">\(y_i =d_{1}(\bar{x}_{1990}- \bar{x}_{2010}) + d_{2}( \bar{x}_{2000}- \bar{x}_{1990}) + d_{3}( \bar{x}_{2010}- \bar{x}_{1990}) +\epsilon_i\)</span></p>
+<p>You may (or may not) find this visualization helpful to your thinking.</p>
+<p><img src="STA303_w1_class_files/figure-html/unnamed-chunk-8-1.png" width="500" /></p>
+</div>
+</div>
+<div id="section-question-5" class="section level2">
+<h2>Question 5</h2>
+<div id="section-anova-assumption-rule-of-thumb" class="section level3">
+<h3>ANOVA assumption rule of thumb</h3>
+<p><strong>Note</strong>: there are specific tests for equality of variances, but for the purposes of this course we will just consider a rule of thumb from Dean and Voss (<em>Design and Analysis of Experiments</em>, 1999, page 112): if the ratio of the largest within-in group variance estimate to the smallest within-group variance estimate does not exceed 3, <span class="math inline">\(s^2_{max}/s^2_{min}&lt;3\)</span> , the assumption is probably satisfied.</p>
+<p>The below code produces a summary of the <code>tv_data_edit</code> tibble. You can ignore the ‘.groups = “keep”’ part. Even if you are unfamiliar with the over syntax, you should be able to figure out what a, b, c, d and e are from your previous knowledge of R.</p>
+<pre class="r"><code>tv_data_edit %&gt;% 
+  group_by(decade) %&gt;% 
+  summarise(a = mean(av_rating), b = var(av_rating), c = sd(av_rating), d = var(av_rating)^2, e = max(av_rating), .groups = &quot;keep&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["decade"],"name":[1],"type":["chr"],"align":["left"]},{"label":["a"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["b"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["c"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["d"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["e"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"1990","2":"7.833275","3":"0.6864401","4":"0.8285168","5":"0.4712000","6":"9.6824"},{"1":"2000","2":"8.021720","3":"0.3605839","4":"0.6004864","5":"0.1300207","6":"9.4000"},{"1":"2010","2":"8.108241","3":"0.4441673","4":"0.6664588","5":"0.1972846","6":"9.5540"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<div class="tutorial-exercise" data-label="eqvar" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># You can use this area as a calculator if you wish</code></pre>
+<script type="application/json" data-ui-opts="1">{"engine":"r","has_checker":false,"caption":"R code"}</script>
+</div>
+<p>Which of the following is true based on this table?</p>
+<p><strong> A. The equality of variances assumption appears to be satisfied, therefore ANOVA is definitely appropriate.<br />
+B. The equality of variances assumption appears to be satisfied, but we can’t proceed with ANOVA without checking the other assumptions.<br />
+C. The equality of variances assumption appears to be seriously violated, therefore ANOVA is not appropriate.<br />
+D. Not enough information to make a claim about the equality of variances assumption. </strong></p>
+</div>
+</div>
+<div id="section-question-6" class="section level2">
+<h2>Question 6</h2>
 <div id="section-one-way-anova-as-regression" class="section level3">
 <h3>One-way ANOVA as regression</h3>
-<p>Model: One mean for each group predicts <span class="math inline">\(y\)</span>.</p>
-<p><span class="math display">\[y = \beta_0 + \beta_1x_1 + \beta_2x_2 + \beta_3x_3+\ldots\ H_0:\beta_0=y\]</span></p>
-<p>where xi are indicators (<span class="math inline">\(x=0\)</span> or <span class="math inline">\(x=1\)</span>) where at most one xi=1 while all others are <span class="math inline">\(x_i=0\)</span>.</p>
-<p>Notice how this is just ’’more of the same" of what we saw iwth the t-test. When there are only two groups, this model is <span class="math inline">\(y=\beta_9 + \beta_1x_1\)</span>, the independent t-test. If there is only one group? <span class="math inline">\(y=\beta_0\)</span>, the one-sample t-test. I hope this is easier to see from the visualization.</p>
-<p><img src="images/anova_image.png" width="100%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>summary(lm(av_rating ~ decade, data = tv_data_edit))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = av_rating ~ decade, data = tv_data_edit)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -5.4043 -0.3159  0.0541  0.4194  1.8491 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  7.83327    0.04634 169.055  &lt; 2e-16 ***
+## decade2000   0.18845    0.05384   3.500 0.000474 ***
+## decade2010   0.27497    0.04949   5.555 3.09e-08 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.6667 on 2263 degrees of freedom
+## Multiple R-squared:  0.01462,    Adjusted R-squared:  0.01375 
+## F-statistic: 16.79 on 2 and 2263 DF,  p-value: 5.788e-08</code></pre>
+<pre class="r"><code>summary(aov(av_rating ~ decade, data = tv_data_edit))</code></pre>
+<pre><code>##               Df Sum Sq Mean Sq F value   Pr(&gt;F)    
+## decade         2   14.9   7.461   16.79 5.79e-08 ***
+## Residuals   2263 1005.7   0.444                     
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Assume the assumptions for ANOVA are valid (this may not be true). Which ONE of the following is the best conclusion?</p>
+<p><strong> A. We have very strong evidence (p-value &lt; 2e-16) against the hypothesis that the mean season average ratings are the same in each decade. B. We have very strong evidence (p-value = 5.788e-08) against the hypothesis that the mean season average ratings are the same in each decade.<br />
+C. We have very very strong evidence (p-value = 5.788e-08) that at least one of the mean season average ratings is different from the others.<br />
+D. We have very strong evidence (p-value &lt; 2e-16) that at least one of the mean season average ratings is different from the others. </strong></p>
 </div>
 </div>
-<div id="section-question-8" class="section level2">
-<h2>Question 8</h2>
+<div id="section-question-7" class="section level2">
+<h2>Question 7</h2>
+<div id="section-linearity" class="section level3">
+<h3>Linearity</h3>
 <p>Which ONE of these models is NOT linear?</p>
 <p>A. <span class="math inline">\(Y = \beta_0 + \beta_1X_1 + \beta_2X_3^2\)</span><br />
 B. <span class="math inline">\(Y = \beta_0 + \beta_1X_1 + \beta_2X_2X_3\)</span><br />
 C. <span class="math inline">\(Y = \beta_0 + \beta_1X_1 + X_3^{\beta_2}\)</span><br />
 D. <span class="math inline">\(Y = \beta_0 + \beta_1X_1 + \beta_2X_2 + \beta_3cos(X_3)\)</span></p>
 </div>
-<div id="section-question-9" class="section level2">
-<h2>Question 9</h2>
-<p>LaTeX is a document preparation system that allows us to type set mathematic symbols well. In R Markdown, which we will use for assessments in this course (more on that next week for those who are unfamiliar), we can use LaTeX syntax to write equations and mathematical symbols. Single dollar sign pairs $ create inline expressions and double dollar sign pairs ($$) will show the express in dispaly mode.</p>
+</div>
+<div id="section-question-8" class="section level2">
+<h2>Question 8</h2>
+<div id="section-latex" class="section level3">
+<h3>LaTeX</h3>
+<p>LaTeX is a document preparation system that allows us to type set mathematical symbols well. In R Markdown, which we will use for assessments in this course (more on that next week for those who are unfamiliar), we can use LaTeX syntax to write equations and mathematical symbols. Single dollar sign pairs $ create inline expressions and double dollar sign pairs ($$) will show the express in display mode.</p>
 <p>Inline: <span class="math inline">\(\pi^2\)</span></p>
 <p>Display: <span class="math display">\[\pi^2\]</span></p>
 <ul>
-<li>Greek letters can be diplayed with a back slash before their name, e.g., <code>$\eta$</code> -&gt; <span class="math inline">\(\eta\)</span>.</li>
+<li>Greek letters can be displayed with a back slash before their name, e.g., <code>$\eta$</code> -&gt; <span class="math inline">\(\eta\)</span>.</li>
 <li>Superscripts: <code>$a^b$</code> -&gt; <span class="math inline">\(a^b\)</span>, or <code>$a^{2b}$</code> -&gt; <span class="math inline">\(a^{2b}\)</span>.</li>
 <li>Subscripts: <code>$a_b$</code> -&gt; <span class="math inline">\(a_b\)</span>, or <code>$a_{2b}$</code> -&gt; <span class="math inline">\(a_{2b}\)</span>.</li>
 </ul>
+<p>Note: <code>$a_bi$</code> -&gt; <span class="math inline">\(a_bi\)</span></p>
 <p>Which of the following lines of LaTeX would create the equation below (if correctly put in dollar signs $)?</p>
 <p><span class="math display">\[y_i = \beta_0 + \beta_1x_{1i} + \epsilon_i\]</span></p>
 <p>A. <code>yi = \beta0 + \beta1x{1i} + \epsilon i</code><br />
@@ -266,14 +339,18 @@ B. <code>y_i = \beta_0 + \beta_1x_1i + \epsilon_i</code><br />
 C. <code>y_i = \b_0 + \b_0\ex_1i + \error_i</code><br />
 D. <code>y_i = \beta_0 + \beta_1x_{1i} + \epsilon_i</code></p>
 </div>
-<div id="section-question-10" class="section level2">
-<h2>Question 10</h2>
+</div>
+<div id="section-question-9" class="section level2">
+<h2>Question 9</h2>
+<div id="section-course-logistics" class="section level3">
+<h3>Course logistics</h3>
 <p>One of the important administrative <a href="https://q.utoronto.ca/courses/204826/pages/forms">Forms</a> for this course has an emoji hiding in it. Check each of the forms and select which ONE of the following emoji it is.</p>
-<p>A. 🚯<br />
+<p><strong> A. 🚯<br />
 B. 🔤<br />
 C. 🚝<br />
-D. 🕧</p>
-<p>Note: These are all examples of unpopular (i.e. not commonly used) emoji based on <a href="http://emojitracker.com/" class="uri">http://emojitracker.com/</a>. Photosensitivity warning for flashing as the site updates realtime.</p>
+D. 🕧<br />
+</strong></p>
+<p>Note: These are all examples of unpopular (i.e. not commonly used) emoji based on <a href="http://emojitracker.com/" class="uri">http://emojitracker.com/</a>. Photosensitivity warning for flashing as the site updates real-time.</p>
 
 <script type="application/shiny-prerendered" data-context="server-start">
 library(learnr)
@@ -364,34 +441,6 @@ learnr:::store_exercise_setup_chunk("__setup__", c("library(learnr)", "library(t
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
-learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "assumptions", 
-    question = structure("What is the correct answer?", html = TRUE, class = c("html", 
-    "character")), answers = list(structure(list(id = "lnr_ans_884270a", 
-        option = "A", value = "A", label = structure("A", html = TRUE, class = c("html", 
-        "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-    "tutorial_quiz_answer")), structure(list(id = "lnr_ans_d5accd4", 
-        option = "B", value = "B", label = structure("B", html = TRUE, class = c("html", 
-        "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", 
-    "tutorial_quiz_answer")), structure(list(id = "lnr_ans_d1d9def", 
-        option = "C", value = "C", label = structure("C", html = TRUE, class = c("html", 
-        "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-    "tutorial_quiz_answer")), structure(list(id = "lnr_ans_24fdfb4", 
-        option = "D", value = "D", label = structure("D", html = TRUE, class = c("html", 
-        "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-    "tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", 
-    "character")), try_again = structure("Try Again", html = TRUE, class = c("html", 
-    "character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", 
-    "character")), try_again = structure("Incorrect", html = TRUE, class = c("html", 
-    "character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
-    "character")), message = NULL, post_message = NULL), ids = list(
-        answer = "assumptions-answer", question = "assumptions"), 
-    loading = structure("<strong>Loading:<\u002fstrong> \nWhat is the correct answer?\n<br/><br/><br/>", html = TRUE, class = c("html", 
-    "character")), random_answer_order = FALSE, allow_retry = FALSE, 
-    seed = 1620091588.24559, options = list()), class = c("learnr_radio", 
-"tutorial_question")))
-</script>
- 
-<script type="application/shiny-prerendered" data-context="server">
 `tutorial-exercise-onetest-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-onetest-code-editor`)), session)
 output$`tutorial-exercise-onetest-output` <- renderUI({
   `tutorial-exercise-onetest-result`()
@@ -428,16 +477,16 @@ learnr:::store_exercise_cache("onetest", list(setup = NULL, chunks = list(list(l
 <script type="application/shiny-prerendered" data-context="server">
 learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "onetest_ans", 
     question = structure("What is the correct answer?", html = TRUE, class = c("html", 
-    "character")), answers = list(structure(list(id = "lnr_ans_f36b1b4", 
+    "character")), answers = list(structure(list(id = "lnr_ans_16eec45", 
         option = "A", value = "A", label = structure("A", html = TRUE, class = c("html", 
         "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-    "tutorial_quiz_answer")), structure(list(id = "lnr_ans_32ee3f9", 
+    "tutorial_quiz_answer")), structure(list(id = "lnr_ans_f31492e", 
         option = "B", value = "B", label = structure("B", html = TRUE, class = c("html", 
         "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-    "tutorial_quiz_answer")), structure(list(id = "lnr_ans_370f03b", 
+    "tutorial_quiz_answer")), structure(list(id = "lnr_ans_910de11", 
         option = "C", value = "C", label = structure("C", html = TRUE, class = c("html", 
         "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", 
-    "tutorial_quiz_answer")), structure(list(id = "lnr_ans_520798f", 
+    "tutorial_quiz_answer")), structure(list(id = "lnr_ans_b50ff0", 
         option = "D", value = "D", label = structure("D", html = TRUE, class = c("html", 
         "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
     "tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", 
@@ -449,76 +498,24 @@ learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label 
         answer = "onetest_ans-answer", question = "onetest_ans"), 
     loading = structure("<strong>Loading:<\u002fstrong> \nWhat is the correct answer?\n<br/><br/><br/>", html = TRUE, class = c("html", 
     "character")), random_answer_order = FALSE, allow_retry = FALSE, 
-    seed = 1814424693.65509, options = list()), class = c("learnr_radio", 
+    seed = 1451161216.82425, options = list()), class = c("learnr_radio", 
 "tutorial_question")))
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
-learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "whatd", question = structure("What is the correct answer?", html = TRUE, class = c("html", 
-"character")), answers = list(structure(list(id = "lnr_ans_a22e6ac", 
-    option = "A", value = "A", label = structure("A", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_6c50da9", 
-    option = "B", value = "B", label = structure("B", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_67bbd73", 
-    option = "C", value = "C", label = structure("C", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_eb306d9", 
-    option = "D", value = "D", label = structure("D", html = TRUE, class = c("html", 
-    "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", 
-"character")), try_again = structure("Try Again", html = TRUE, class = c("html", 
-"character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", 
-"character")), try_again = structure("Incorrect", html = TRUE, class = c("html", 
-"character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
-"character")), message = NULL, post_message = NULL), ids = list(
-    answer = "whatd-answer", question = "whatd"), loading = structure("<strong>Loading:<\u002fstrong> \nWhat is the correct answer?\n<br/><br/><br/>", html = TRUE, class = c("html", 
-"character")), random_answer_order = FALSE, allow_retry = FALSE, 
-    seed = 1736799493.69124, options = list()), class = c("learnr_radio", 
-"tutorial_question")))
-</script>
- 
-<script type="application/shiny-prerendered" data-context="server">
-learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "dummies", question = structure("What is the correct answer?", html = TRUE, class = c("html", 
-"character")), answers = list(structure(list(id = "lnr_ans_8a43694", 
-    option = "A", value = "A", label = structure("A", html = TRUE, class = c("html", 
-    "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_1b77151", 
-    option = "B", value = "B", label = structure("B", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_745681a", 
-    option = "C", value = "C", label = structure("C", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_d4dace", 
-    option = "D", value = "D", label = structure("D", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", 
-"character")), try_again = structure("Try Again", html = TRUE, class = c("html", 
-"character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", 
-"character")), try_again = structure("Incorrect", html = TRUE, class = c("html", 
-"character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
-"character")), message = NULL, post_message = NULL), ids = list(
-    answer = "dummies-answer", question = "dummies"), loading = structure("<strong>Loading:<\u002fstrong> \nWhat is the correct answer?\n<br/><br/><br/>", html = TRUE, class = c("html", 
-"character")), random_answer_order = FALSE, allow_retry = FALSE, 
-    seed = 1629361657.24127, options = list()), class = c("learnr_radio", 
-"tutorial_question")))
-</script>
- 
-<script type="application/shiny-prerendered" data-context="server">
-`tutorial-exercise-interpret-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-interpret-code-editor`)), session)
-output$`tutorial-exercise-interpret-output` <- renderUI({
-  `tutorial-exercise-interpret-result`()
+`tutorial-exercise-eqvar-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-eqvar-code-editor`)), session)
+output$`tutorial-exercise-eqvar-output` <- renderUI({
+  `tutorial-exercise-eqvar-result`()
 })
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
-learnr:::store_exercise_cache("interpret", list(setup = NULL, chunks = list(list(label = "interpret", code = "", 
-    opts = list(label = "\"interpret\"", exercise = "TRUE"), 
-    engine = "r")), code_check = NULL, error_check = NULL, check = NULL, 
-    solution = NULL, options = list(eval = FALSE, echo = TRUE, 
-        results = "markup", tidy = FALSE, tidy.opts = NULL, collapse = FALSE, 
-        prompt = FALSE, comment = NA, highlight = FALSE, strip.white = TRUE, 
+learnr:::store_exercise_cache("eqvar", list(setup = NULL, chunks = list(list(label = "eqvar", code = "# You can use this area as a calculator if you wish\n", 
+    opts = list(label = "\"eqvar\"", exercise = "TRUE"), engine = "r")), 
+    code_check = NULL, error_check = NULL, check = NULL, solution = NULL, 
+    options = list(eval = FALSE, echo = TRUE, results = "markup", 
+        tidy = FALSE, tidy.opts = NULL, collapse = FALSE, prompt = FALSE, 
+        comment = NA, highlight = FALSE, strip.white = TRUE, 
         size = "normalsize", background = "#F7F7F7", cache = 0, 
         cache.path = "STA303_w1_class_cache/html/", cache.vars = NULL, 
         cache.lazy = TRUE, dependson = NULL, autodep = FALSE, 
@@ -532,89 +529,11 @@ learnr:::store_exercise_cache("interpret", list(setup = NULL, chunks = list(list
         aniopts = "controls,loop", warning = TRUE, error = FALSE, 
         message = TRUE, render = NULL, ref.label = NULL, child = NULL, 
         engine = "r", split = FALSE, include = TRUE, purl = TRUE, 
-        max.print = 1000, tutorial = TRUE, label = "interpret", 
-        exercise = TRUE, code = "", out.width.px = 624, out.height.px = 384, 
-        params.src = "interpret, exercise=TRUE", fig.num = 0L, 
-        exercise.df_print = "paged", exercise.checker = "NULL"), 
+        max.print = 1000, tutorial = TRUE, label = "eqvar", exercise = TRUE, 
+        code = c("# You can use this area as a calculator if you wish", 
+        ""), out.width.px = 624, out.height.px = 384, params.src = "eqvar, exercise = TRUE", 
+        fig.num = 0, exercise.df_print = "paged", exercise.checker = "NULL"), 
     engine = "r"))
-</script>
- 
-<script type="application/shiny-prerendered" data-context="server">
-learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "linear", question = structure("What is the correct answer?", html = TRUE, class = c("html", 
-"character")), answers = list(structure(list(id = "lnr_ans_aca7af1", 
-    option = "A", value = "A", label = structure("A", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_1f15da0", 
-    option = "B", value = "B", label = structure("B", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_a70e1c", 
-    option = "C", value = "C", label = structure("C", html = TRUE, class = c("html", 
-    "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_3acc42b", 
-    option = "D", value = "D", label = structure("D", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", 
-"character")), try_again = structure("Try Again", html = TRUE, class = c("html", 
-"character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", 
-"character")), try_again = structure("Incorrect", html = TRUE, class = c("html", 
-"character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
-"character")), message = NULL, post_message = NULL), ids = list(
-    answer = "linear-answer", question = "linear"), loading = structure("<strong>Loading:<\u002fstrong> \nWhat is the correct answer?\n<br/><br/><br/>", html = TRUE, class = c("html", 
-"character")), random_answer_order = FALSE, allow_retry = FALSE, 
-    seed = 1535997029.78475, options = list()), class = c("learnr_radio", 
-"tutorial_question")))
-</script>
- 
-<script type="application/shiny-prerendered" data-context="server">
-learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "latex", question = structure("What is the correct answer?", html = TRUE, class = c("html", 
-"character")), answers = list(structure(list(id = "lnr_ans_47b6e05", 
-    option = "A", value = "A", label = structure("A", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_d434d8d", 
-    option = "B", value = "B", label = structure("B", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_75dbea9", 
-    option = "C", value = "C", label = structure("C", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_12a3005", 
-    option = "D", value = "D", label = structure("D", html = TRUE, class = c("html", 
-    "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", 
-"character")), try_again = structure("Try Again", html = TRUE, class = c("html", 
-"character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", 
-"character")), try_again = structure("Incorrect", html = TRUE, class = c("html", 
-"character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
-"character")), message = NULL, post_message = NULL), ids = list(
-    answer = "latex-answer", question = "latex"), loading = structure("<strong>Loading:<\u002fstrong> \nWhat is the correct answer?\n<br/><br/><br/>", html = TRUE, class = c("html", 
-"character")), random_answer_order = FALSE, allow_retry = FALSE, 
-    seed = 1339741299.87613, options = list()), class = c("learnr_radio", 
-"tutorial_question")))
-</script>
- 
-<script type="application/shiny-prerendered" data-context="server">
-learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "formemoji", question = structure("What is the correct answer?", html = TRUE, class = c("html", 
-"character")), answers = list(structure(list(id = "lnr_ans_8de8fb6", 
-    option = "A", value = "A", label = structure("A", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_4dbc07b", 
-    option = "B", value = "B", label = structure("B", html = TRUE, class = c("html", 
-    "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_2ce338", 
-    option = "C", value = "C", label = structure("C", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_502d965", 
-    option = "D", value = "D", label = structure("D", html = TRUE, class = c("html", 
-    "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", 
-"character")), try_again = structure("Try Again", html = TRUE, class = c("html", 
-"character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", 
-"character")), try_again = structure("Incorrect", html = TRUE, class = c("html", 
-"character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
-"character")), message = NULL, post_message = NULL), ids = list(
-    answer = "formemoji-answer", question = "formemoji"), loading = structure("<strong>Loading:<\u002fstrong> \nWhat is the correct answer?\n<br/><br/><br/>", html = TRUE, class = c("html", 
-"character")), random_answer_order = FALSE, allow_retry = FALSE, 
-    seed = 877099155.091569, options = list()), class = c("learnr_radio", 
-"tutorial_question")))
 </script>
  <!--html_preserve-->
 <script type="application/shiny-prerendered" data-context="dependencies">
@@ -623,9 +542,10 @@ learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label 
 <!--/html_preserve-->
 <!--html_preserve-->
 <script type="application/shiny-prerendered" data-context="execution_dependencies">
-{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85]}},"value":[{"type":"character","attributes":{},"value":["assertthat","backports","base","broom","cellranger","checkmate","cli","colorspace","compiler","crayon","curl","datasets","DBI","dbplyr","digest","dplyr","ellipsis","evaluate","fansi","farver","fastmap","forcats","fs","generics","ggplot2","glue","graphics","grDevices","grid","gtable","haven","hms","htmltools","htmlwidgets","httpuv","httr","jsonlite","knitr","labeling","later","lattice","learnr","lifecycle","lubridate","magrittr","markdown","Matrix","methods","mgcv","mime","modelr","munsell","nlme","pillar","pkgconfig","promises","purrr","R6","Rcpp","readr","readxl","reprex","rlang","rmarkdown","rprojroot","rstudioapi","rvest","scales","shiny","splines","stats","stringi","stringr","tibble","tidyr","tidyselect","tidyverse","tools","utils","vctrs","withr","xfun","xml2","xtable","yaml"]},{"type":"character","attributes":{},"value":["0.2.1","1.2.1","3.6.2","0.7.3","1.1.0","2.0.0","2.2.0","2.0-0","3.6.2","1.3.4","4.3","3.6.2","1.1.0","2.0.0","0.6.27","1.0.2","0.3.1","0.14","0.4.1","2.0.3","1.0.1","0.5.0","1.5.0","0.1.0","3.3.2","1.4.2","3.6.2","3.6.2","3.6.2","0.3.0","2.3.1","0.5.3","0.5.0.9003","1.5.3","1.5.4","1.4.2","1.7.2","1.30","0.4.2","1.1.0.1","0.20-41","0.10.1.9007","0.2.0","1.7.9.2","2.0.1","1.1","1.2-18","3.6.2","1.8-31","0.9","0.1.8","0.5.0","3.1-148","1.4.7","2.0.3","1.1.1","0.3.4","2.5.0","1.0.5","1.4.0","1.3.1","0.3.0","0.4.10","2.6","2.0.2","0.13","0.3.6","1.1.1","1.5.0","3.6.2","3.6.2","1.5.3","1.4.0","3.0.4","1.1.2","1.1.0","1.3.0","3.6.2","3.6.2","0.3.6","2.3.0","0.20","1.3.2","1.8-4","2.2.1"]}]}]}
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86]}},"value":[{"type":"character","attributes":{},"value":["assertthat","backports","base","broom","cellranger","checkmate","cli","colorspace","compiler","crayon","curl","datasets","DBI","dbplyr","digest","dplyr","ellipsis","evaluate","fansi","farver","fastmap","forcats","fs","generics","ggplot2","glue","graphics","grDevices","grid","gtable","haven","hms","htmltools","htmlwidgets","httpuv","httr","jsonlite","knitr","labeling","later","lattice","learnr","lifecycle","lubridate","magrittr","markdown","Matrix","methods","mgcv","mime","modelr","munsell","nlme","pillar","pkgconfig","promises","purrr","R6","Rcpp","readr","readxl","reprex","rlang","rmarkdown","rprojroot","rstudioapi","rvest","scales","shiny","splines","stats","stringi","stringr","tibble","tidyr","tidyselect","tidyverse","tools","utf8","utils","vctrs","withr","xfun","xml2","xtable","yaml"]},{"type":"character","attributes":{},"value":["0.2.1","1.2.1","3.6.2","0.7.3","1.1.0","2.0.0","2.2.0","2.0-0","3.6.2","1.3.4","4.3","3.6.2","1.1.0","2.0.0","0.6.27","1.0.2","0.3.1","0.14","0.4.1","2.0.3","1.0.1","0.5.0","1.5.0","0.1.0","3.3.2","1.4.2","3.6.2","3.6.2","3.6.2","0.3.0","2.3.1","0.5.3","0.5.0.9003","1.5.3","1.5.4","1.4.2","1.7.2","1.30","0.4.2","1.1.0.1","0.20-41","0.10.1.9007","0.2.0","1.7.9.2","2.0.1","1.1","1.2-18","3.6.2","1.8-31","0.9","0.1.8","0.5.0","3.1-148","1.4.7","2.0.3","1.1.1","0.3.4","2.5.0","1.0.5","1.4.0","1.3.1","0.3.0","0.4.10","2.6","2.0.2","0.13","0.3.6","1.1.1","1.5.0","3.6.2","3.6.2","1.5.3","1.4.0","3.0.4","1.1.2","1.1.0","1.3.0","3.6.2","1.1.4","3.6.2","0.3.6","2.3.0","0.20","1.3.2","1.8-4","2.2.1"]}]}]}
 </script>
 <!--/html_preserve-->
+</div>
 </div>
 
 </div> <!-- topics -->

@@ -108,6 +108,16 @@ D. Linear regression does not seem appropriate due to the linearity assumption b
 
 Note: In the following questions we will assume we can proceed with linear regression. This may or may not be _correct_. I.e. it is not a hint to the answer to this question.
 
+```{r assumptions, include=FALSE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B", correct = TRUE),
+         answer("C"),
+         answer("D")
+)
+```
+
+
 ## Question 2
 
 ### t-test
@@ -216,6 +226,16 @@ C. Each $d$ would have to be a vector of FIVE 0s and 1s, and take the value 1 wh
 D. Each $d$ would have to be a vector of FIFTEEN 0s and 1s, and take the value 1 when the observation is that decade.
 **
 
+```{r whatd, include=FALSE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C"),
+         answer("D", correct = TRUE)
+)
+```
+
+
 ## Question 4
 
 ### Equations
@@ -227,6 +247,14 @@ B. $y_i = \bar{x}_{1990} + d_{2}(\bar{x}_{2000}-\bar{x}_{1990}-\bar{x}_{2010}) +
 C. $y_i = (\bar{x}_{1990} +\bar{x}_{2000} + \bar{x}_{2010})*(-d_{1} - d_{2} - d_{3})$  
 D. $y_i =d_{1}(\bar{x}_{1990}- \bar{x}_{2010}) + d_{2}( \bar{x}_{2000}- \bar{x}_{1990}) + d_{3}( \bar{x}_{2010}- \bar{x}_{1990}) +\epsilon_i$
 
+```{r dummies, include=FALSE}
+question("What is the correct answer?",
+         answer("A", correct = TRUE),
+         answer("B"),
+         answer("C"),
+         answer("D")
+)
+```
 
 You may (or may not) find this visualization helpful to your thinking.
 
@@ -272,7 +300,17 @@ C.  The equality of variances assumption appears to be seriously violated, there
 D. Not enough information to make a claim about the equality of variances assumption.
 **
 
+```{r eqvar-ans, include=FALSE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B", correct = TRUE),
+         answer("C"),
+         answer("D")
+)
+```
+
 ## Question 6
+
 
 ### One-way ANOVA as regression
 
@@ -291,6 +329,15 @@ C. We have very very strong evidence (p-value = 5.788e-08) that at least one of 
 D. We have very strong evidence (p-value < 2e-16) that at least one of the mean season average ratings is different from the others.
 **
 
+```{r anova-conc, include=FALSE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B", correct = TRUE),
+         answer("C"),
+         answer("D")
+)
+```
+
 ## Question 7
 
 ### Linearity
@@ -301,6 +348,14 @@ A. $Y = \beta_0 + \beta_1X_1 + \beta_2X_3^2$
 B. $Y = \beta_0 + \beta_1X_1 + \beta_2X_2X_3$  
 C. $Y = \beta_0 + \beta_1X_1 + X_3^{\beta_2}$  
 D. $Y = \beta_0 + \beta_1X_1 + \beta_2X_2 + \beta_3cos(X_3)$  
+
+```{r linear, include=FALSE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C", correct = TRUE),
+         answer("D"))
+```
 
 ## Question 8
 
@@ -327,6 +382,14 @@ B. `y_i = \beta_0 + \beta_1x_1i + \epsilon_i`
 C. `y_i = \b_0 + \b_0\ex_1i + \error_i`  
 D. `y_i = \beta_0 + \beta_1x_{1i} + \epsilon_i`  
 
+```{r latex, include=FALSE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C"),
+         answer("D", correct = TRUE)
+)
+```
 
 ## Question 9
 
@@ -343,5 +406,13 @@ D. 🕧
 
 Note: These are all examples of unpopular (i.e. not commonly used) emoji based on http://emojitracker.com/. Photosensitivity warning for flashing as the site updates real-time.
 
+```{r formemoji, include=FALSE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B", correct = TRUE),
+         answer("C"),
+         answer("D")
+)
+```
 
 
