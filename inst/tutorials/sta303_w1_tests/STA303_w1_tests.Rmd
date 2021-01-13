@@ -10,10 +10,10 @@ runtime: shiny_prerendered
 install.packages("palmerpenguins", repos = "https://cloud.r-project.org")
 
 # TODO make these available again
-remotes::install_github("rstudio/learnr", force = TRUE)
+#remotes::install_github("rstudio/learnr", force = TRUE)
 library(learnr)
-remotes::install_github("rstudio-education/gradethis")
-gradethis::gradethis_setup()
+#remotes::install_github("rstudio-education/gradethis")
+#gradethis::gradethis_setup()
 
 
 library(knitr)
@@ -26,6 +26,8 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ## Introduction
+
+_Technical note: I have had to remove code answer checking, but if you get stuck the final 'Hint' is the solution. This is ungraded, so don't worry, just slightly inconvenient._
 
 You have probably encountered several statistical tests in your studies so far. 
 
