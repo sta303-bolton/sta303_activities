@@ -109,13 +109,17 @@ The `penguins` dataset is already loaded, you you don't have to run any librarie
 # Have you tried mu=4000?
 ```
 
+```{r onesamplt-hint-3}
+# Have you added var.equal = TRUE?
+```
+
 ```{r onesamplt-solution}
-t.test(penguins$body_mass_g, mu = 4000)
+t.test(penguins$body_mass_g, mu = 4000, var.equal = TRUE)
 ```
 
 ```{r onesamplt-check}
 grade_result(
-  pass_if(~identical(.result, t.test(penguins$body_mass_g, mu = 4000)))
+  pass_if(~identical(.result, t.test(penguins$body_mass_g, mu = 4000, var.equal = TRUE)))
 )
 ```
 
@@ -326,7 +330,9 @@ More generally, the sum across the row of the dummy variables for one categorica
 
 #### [Unassessed aside] Why do we have to drop one of the levels?
 
-You may recall that for the matrix calculations required to get our vector of $\beta$s, we need to be able to invert X our matrix. We can only invert linearly independent matrices and if we have the intercept AND dummies for all the levels of the categorical variable, our matrix will be linearly dependent.
+You may recall that for the matrix calculations required to get our vector of $\beta$s, we need to be able to invert X our matrix. We can only invert matrices for which all the columns are linearly independent and if we have the intercept AND dummies for all the levels of the categorical variable, our matrix will be linearly dependent.
+
+[OPTIONAL _Added 2021-01-14_] Additional discussion [here](https://sta303-bolton.github.io/sta303_w1_slides/matrix_demo.html) based on this [Piazza question](https://piazza.com/class/kj98c115q7077t?cid=28).
 
 ## Two means 
 
