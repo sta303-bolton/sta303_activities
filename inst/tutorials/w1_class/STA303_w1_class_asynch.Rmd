@@ -155,9 +155,9 @@ D. The `t.test` functions produces an error due to a violation of Normality assu
 
 ```{r onetest_ans, include=TRUE}
 question("What is the correct answer?",
-         answer("A"),
-         answer("B",),
-         answer("C",  correct = TRUE),
+         answer("A",  correct = TRUE),
+         answer("B"),
+         answer("C"),
          answer("D"),
          message = "Our p-value is large so we have no evidence against our null hypothesis, which is the claim that the average (average) season rating is 8.1."
 )
