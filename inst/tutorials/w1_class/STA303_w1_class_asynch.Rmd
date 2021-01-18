@@ -136,12 +136,12 @@ just2010 <- filter(tv_data_edit, decade == "2010")
 
 ```{r onetest-solution}
 just2010 <- filter(tv_data_edit, decade == "2010")
-t.test(tv_data_edit$av_rating, mu = 8.1)
+t.test(just2010$av_rating, mu = 8.1)
 ```
 
 ```{r include = FALSE, eval = FALSE}
 just2010 <- filter(tv_data_edit, decade == "2010")
-t.test(tv_data_edit$av_rating, mu = 8.1)
+t.test(just2010$av_rating, mu = 8.1)
 ```
 
 Which of the following is the best conclusion based on the result of your t-test?
