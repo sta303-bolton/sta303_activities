@@ -78,7 +78,7 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=80))
 
 ## The premise
 
-Suppose you're in grad school at your dream univeristy and are the Head TA for a course called STA101. At the end of semester, the instructor gets sick and needs to have major surgery and so will not be able to do the final admin for the course. The department Chair asks for your help in preparing the final grades. They tell you they'll check over everything for you before the marks are submitted, but you want to make sure you do it right and provide clear and reproducible code so you can impress the Chair.
+Suppose you're in grad school at your dream university and are the Head TA for a course called STA101. At the end of semester, the instructor gets sick and needs to have major surgery and so will not be able to do the final admin for the course. The department Chair asks for your help in preparing the final grades. They tell you they'll check over everything for you before the marks are submitted, but you want to make sure you do it right and provide clear and reproducible code so you can impress the Chair.
 
 Thankfully, all the marking is done, and the prof has left you the following files and instructions.
 
@@ -97,7 +97,7 @@ You can find it in the syllabus, but also have given you "STA101_assessment-sche
 
 I've already dealt with all the accommodations, so an `NA` in the data from the learning management system means the student didn't submit the assessment and didn't get an accommodation, i.e., they get a 0 on that task.
 
-Also, so many students who are close to a GPA threshold will email once final marks are out asking to be bumped up. I'd never want to be unfair and give a student an advantage just because they asked, where another student in the same situation wouldn't get the advantage because they were too polite to ask. So, I was planning to use the below function to adjust everyone who was 1 percentage point below the threshhold up to it. If the Chair asks you to help manage the emails afterwards, tell anyone who asks that the course policy is to make no ad hoc adjustments for individual students as that wouldn't be fair.
+Also, so many students who are close to a GPA threshold will email once final marks are out asking to be bumped up. I'd never want to be unfair and give a student an advantage just because they asked, where another student in the same situation wouldn't get the advantage because they were too polite to ask. So, I was planning to use the below function to adjust everyone who was 1 percentage point below the threshold up to it. If the Chair asks you to help manage the emails afterwards, tell anyone who asks that the course policy is to make no ad hoc adjustments for individual students as that wouldn't be fair.
 
 ```
 adjust_GPA_thresh <- function(x){
