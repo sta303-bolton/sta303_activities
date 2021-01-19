@@ -121,13 +121,16 @@ We can read RDS with `readRDS()` from base R. `read_csv()` from the `readr` pack
 
 ```{r}
 # Read in the grades from the LMS as an object called 'gradebook_raw' using read_excel
+gradebook_raw <- read_excel("student_data/STA101_gradebook-from-LMS.xlsx", sheet = 1)
 
 # Read in emails of the students who completed the 2% survey as 'survey_raw'
+survey_raw <- read_csv("student_data/STA101_2-perc-survey.csv")
 
 # Read in the course roster as 'roster'
+roster <- read_csv("student_data/STA101_course-roster.csv")
 
 # Read in the assessment weighting scheme as 'weight'
-
+weight <- readRDS("student_data/STA101_assessment-scheme-from-syllabus.RDS")
 ```
 
 Explore the data sets using: `glimpse()`, `str()`, `head()` and `View()`.
@@ -140,14 +143,17 @@ I've also shown some code to very quickly get the names of all the variables in 
 
 ```{r, example_check}
 # glimpse lets us take a quick look at the data
+glimpse(gradebook_raw)
 
 #head lets us look at the top few rows. Can you guess waht tail() does?
+head(survey_raw, n = 10)
 
 # str is an even more sophicticated glimpse, that is quite good if 
 ## you know there are some complicated structures with your data. Out of scope for us.
+str(roster)
 
 # View will open a new tab with a spreadsheet like view
-
+# View(weight)
 ```
 
 ### Use `janitor` to clean our data
@@ -155,7 +161,8 @@ I've also shown some code to very quickly get the names of all the variables in 
 `janitor` is a great package with lots of convenience functions for cleaning up data for use in analysis. The one I use the most is `clean_names()` which will make all the names consistent, specifically, unique, lowercase, spaces replaced with underscores, and special characters simplified or removed.
 
 ```{r}
-
+gradebook_clean <- gradebook_raw %>% 
+  janitor::clean_names() 
 ```
 
 ### Replace NAs with 0s
@@ -164,20 +171,22 @@ There are lots of places you could start with this, but I want to show you this 
 
 ```{r}
 # checking which columns are numeric with glimpse
-
+glimpse(gradebook_clean)
 ```
 
 Let's quickly check if any IDs are NA, because if not, we can just say 'apply to all numeric columns' without worry.
 
 ```{r replacena}
 # quick check no NA ids
-
+gradebook_clean %>% 
+  filter(is.na(id))
 ```
 
 Use mutate_if to replace missing values in all numeric columns with 0.
 
 ```{r}
-
+gradebook <- gradebook_clean %>% 
+  mutate_if(is.numeric, replace_na, replace = 0)
 ```
 
 ### Add the survey to the gradebook
@@ -190,12 +199,15 @@ There are 4 types of joins in dplyr. Run `?join` to see the information about th
 
 #### Check one: do a full join and see if the numbers are right
 
-
 ```{r}
+survey_link <- roster %>% 
+  full_join(survey_raw, by = "email")
 
 # Can check number of rows by looking at Environment pane or 
 # checking with nrow(), e.g. nrow(roster)
-
+nrow(survey_link)
+nrow(roster)
+nrow(gradebook)
 ```
 
 There is a problem! We have gained 20 extra students somehow...
@@ -204,7 +216,9 @@ There is a problem! We have gained 20 extra students somehow...
 
 ```{r}
 # distinct() returns a tibble with only the distinct rows from your original
-
+distinct(survey_raw)
+distinct(survey_link)
+distinct(roster)
 ```
 
 Nope, no straight duplicates.
@@ -213,31 +227,47 @@ Nope, no straight duplicates.
 
 ```{r}
 # Filter to only rows where name is missing or email is missing
-
+problems <- survey_link %>% 
+  filter(is.na(name) | is.na(email))
 ```
 
 We can look at this data and compare it to how the emails are supposed to look, an notice that the problem is because there is a missing full stop in several student emails.
 
-#### Fix typos adn merge again properly
+#### Fix typos
 
 The `stringr` package is part of the `tidyverse` and provides lots of options for working with character strings. 
 
 `str_replace()` allows to replace parts of strings that match a certain pattern with another pattern.
 
 ```{r}
+survey <- survey_raw %>% 
+  mutate(email = str_replace(email, "myuniedu", "myuni.edu"))
+
+#survey_link <- roster %>% 
+#  full_join(survey, by = "email")
+
+#survey_full <- survey %>% 
+#  left_join(roster, by="email")
+
+survey_full <- roster %>% 
+  right_join(survey)
 
 ```
 
 Our next step is to link this to the gradebook, but let's make our life easy by creating a dummy variable indicating if the student completed the survey. It is '1' for all the students in this survey_full data.
 
 ```{r}
-
+survey_final <- survey_full %>% 
+  mutate(survey = 1)
 ```
 
 Merge on to gradebook and replace missing values for `survey`, with a 0.
 
 ```{r}
-
+gradebook_wsurv <- gradebook %>% 
+  full_join(survey_final) %>% 
+  mutate(survey = replace_na(survey, 0)) %>% 
+  select(-name, -email)
 ```
 
 ### Is the gradebook tidy?
@@ -251,7 +281,9 @@ How we record and store data is often not the best way to actually work with dat
 Let's fix that!
 
 ```{r pivotlonger}
-
+gradebook_long <- gradebook_wsurv %>% 
+  pivot_longer(-c(student_name, id, tutorial_group), 
+               names_to = "assessment", values_to = "grade") 
 ```
 
 ### Weight the assessments
@@ -265,13 +297,37 @@ Let's fix that!
 `str_remove()` is a shortcut for `str_replace()` where the replacement is 'nothing', i.e., "". 
 
 ```{r}
+grades_weighted <- gradebook_long %>% 
+  mutate(assessment_type = case_when(
+    str_detect(assessment, "problem") ~ "Problem sets",
+    assessment == "survey" ~ "2 percent survey",
+    TRUE ~ str_to_sentence(str_replace_all(assessment, "_", " "))
+  )) %>% 
+  mutate(assessment_type = str_remove(assessment_type, "\\s\\d*$")) %>% 
+  left_join(weight, by = c("assessment_type" = "assessment")) %>% 
+  group_by(student_name, id, tutorial_group, assessment_type, percentage) %>% 
+  summarise(grade_by_type = mean(grade/out_of), .groups = "drop") %>% 
+  group_by(student_name, id, tutorial_group) %>% 
+  summarise(total = sum(percentage*grade_by_type), .groups = "drop")
+```
 
+
+```{r}
+# do a by hand check
+# this is for Tom DeLonge
+7.2/10*4 + 6.2/10*4 +7.6/10*4+7.2/10*4+7.4/10*4+37.1/50*10+42.2/50*10 + 39.6/50*15 + 49.8/50*40 +17.4/20*3 + 1/1*2
 ```
 
 ### Load the adjust_GPA_thresh() function we've been given and apply it
 
 ```{r}
+adjust_GPA_thresh <- function(x){
+  thresh <- c(89, 84, 79, 76, 72, 69, 66, 62, 59, 56, 52, 49)
+  ifelse(round(x)  %in% thresh, round(x)+1, round(x))
+}
 
+grades_adjusted <- grades_weighted %>% 
+  mutate(grade_adj = adjust_GPA_thresh(total))
 ```
 
 (I'm not going to assess you on `group_walk()`, but once again, something that I think is useful and interesting.)
@@ -280,7 +336,10 @@ Let's fix that!
 It is also works on vectors, element-wise. 
 
 ```{r, eval=FALSE}
-
+grades_adjusted %>% 
+  select(id, grade_adj, tutorial_group) %>% 
+  group_by(tutorial_group) %>%
+  group_walk(~ write_csv(.x, str_c("student_data/STA101_", .y$tutorial_group, "_grades-for-submission.csv"), col_names = FALSE))
 ```
 
 ### Visualize
@@ -290,11 +349,29 @@ You've been asked to show the distribution of grades, and indicate tutorial grou
 #### Stacked histogram
 
 ```{r}
+p <- grades_adjusted %>% 
+  ggplot(aes(x = grade_adj)) +
+  geom_histogram()
 
+p
 ```
 
 ```{r, fig.cap="Descriptive caption"}
 
+grades_adjusted %>% 
+  count(tutorial_group, grade_adj) %>% 
+  ggplot(aes(x = grade_adj, y = n, fill = tutorial_group)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous(limits = c(0, 100)) +
+  theme_minimal() +
+  labs(title = "STA101 grade distribution by tutorial group",
+       subtitle = "Winter 2023",
+       x = "Grade (percentage)",
+       y = "Number of students",
+       caption = str_c("Prepared by the Head TA\n", Sys.Date())) +
+  theme(legend.title = element_blank(), legend.position = c(0.15, 0.75)) +
+  scale_y_continuous(limits = c(0, 45), breaks = seq(0, 45, by = 5)) +
+  scale_fill_brewer(palette = "Dark2")
 
 ```
 
@@ -305,6 +382,7 @@ You've been asked to show the distribution of grades, and indicate tutorial grou
 
 ```
 
+
 Use what we've learned about ANOVA. 
 
 $$H_0: \mu_{TUT0101} = \mu_{TUT0201} = \mu_{TUT0301} = \mu_{TUT0401}$$
@@ -312,19 +390,35 @@ $$H_1: \text{at least one mean is different} $$
 
 ```{r}
 # fit lm
+summary(lm(grade_adj ~ tutorial_group, data = grades_adjusted))
 ```
 
+This large p-value means we have no evidence against the claim that the tutorial groups all had the same average final grade.
 
 #### Faceted bar chart
 
 ```{r, fig.cap="Distribution of final grades for STA101"}
-
+grades_adjusted %>% 
+  count(tutorial_group, grade_adj) %>% 
+  ggplot(aes(x = grade_adj, y = n, fill = tutorial_group)) +
+  geom_bar(stat="identity") +
+  scale_x_continuous(limits = c(0, 100)) +
+  facet_wrap(~tutorial_group) +
+  theme_minimal() +
+  theme(legend.position = "none")
 ```
 
 #### Faceted boxplot
 
 ```{r}
-
+grades_adjusted %>% 
+  ggplot(aes(x = grade_adj, colour = tutorial_group)) +
+  geom_boxplot() +
+  scale_x_continuous(limits = c(0, 100)) +
+  facet_wrap(~tutorial_group) +
+  theme_minimal() +
+  theme(legend.position = "none", axis.text.y = element_blank()) +
+  labs(x = "Final grade")
 ```
 
 #### Forcats
@@ -334,7 +428,21 @@ $$H_1: \text{at least one mean is different} $$
 **Reversing the order of the levels in a categorical variable.**
 
 ```{r}
+reordered <- grades_adjusted %>% 
+  count(tutorial_group, grade_adj) %>% 
+  mutate(tutorial_group = fct_rev(tutorial_group))
 
+table(reordered$tutorial_group)
+
+reordered %>% 
+  ggplot(aes(x = grade_adj, colour = tutorial_group)) +
+  geom_boxplot() +
+  scale_x_continuous(limits = c(0, 100)) +
+  facet_wrap(~tutorial_group) +
+  theme_minimal() +
+  theme(legend.position = "none", 
+        axis.text.y = element_blank()) +
+  labs(x = "Final grade")
 ```
 
 **Changing the order of levels in a categorical article.**
