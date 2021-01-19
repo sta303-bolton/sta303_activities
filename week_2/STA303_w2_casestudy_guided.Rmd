@@ -360,14 +360,14 @@ reordered %>%
 
 ### Whip up another quick graph to check the relationship between two of the assessments.
 
-Make a scatter plot with the following requirements:
-* use the version of the gradebook with each row representing a student
-* put assignment 3 grades on the x-axis
-* put final project grades on the y-axis
-* set point transparency to 0.5 
-* colour points by tutorial group (use these hex codes: "#ffaf6d", "#721f3c", "#ea7777", "#abb062")
-* add an overall smooth that is a straight line, the line should be black
-* use theme_minimal()
+Make a scatter plot with the following requirements:  
+* use the version of the gradebook with each row representing a student  
+* put assignment 3 grades on the x-axis  
+* put final project grades on the y-axis  
+* set point transparency to 0.5   
+* colour points by tutorial group (use these hex codes: "#ffaf6d", "#721f3c", "#ea7777", "#abb062")  
+* add an overall smooth that is a straight line, the line should be black  
+* use theme_minimal()  
 
 ```{r}
 gradebook_wsurv %>% 
