@@ -78,7 +78,8 @@ vaccines_ontario %>%
        y = "Doses administered on the previous day", 
        x = "Report date") +
   scale_x_date(labels = scales::date_format("%d %b %y"), 
-               limits = c(as.Date("2021-01-20")-14, as.Date("2021-01-20")))
+               limits = c(as.Date("2021-01-20")-14,
+                          as.Date("2021-01-20")))
 ```
 
 Which ONE of the following is the BEST description of what has gone wrong with this plot and how to fix it?
