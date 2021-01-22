@@ -1,0 +1,242 @@
+---
+title: "STA303: W3 class activity"
+subtitle: "Professional practice for statisticians"
+output: learnr::tutorial
+css: "css/learnr_303.css"
+runtime: shiny_prerendered
+---
+
+```{r setup, include = FALSE}
+# These are the packages you will need for this activity
+packages_needed <- c("tidyverse", "learnr", "lubridate", "ggthemes")
+
+package.check <- lapply(
+  packages_needed,
+  FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+      install.packages(x, dependencies = TRUE)
+    }
+  }
+)
+
+# Credit: package.check based on a helpful post from Vikram Baliga https://vbaliga.github.io/verify-that-r-packages-are-installed-and-loaded/
+
+library(learnr)
+library(tidyverse)
+library(lubridate) # to make it easy to work with dates
+library(ggthemes)
+
+knitr::opts_chunk$set(echo = FALSE)
+
+
+```
+
+## Instructions
+
+To participate in this activity you will need have to two windows readily available to you:
+
+1) Your Zoom window  
+2) The Team Up! activity linked from Quercus in a browser window for voting.
+
+I would recommend that one member of the team shares their screen with the rest of the team and shows this activity where you can see the question and options.
+
+Note 1: In the Team Up! activity you will just see the letters for the questions, not the options themselves. 
+
+Note 2: There are hints for some questions, but if you get really stuck, please use the 'Ask for Help' option in Zoom. 
+
+## The data
+
+Question 1 looks at vaccine data for Ontario and is from https://data.ontario.ca/dataset/covid-19-vaccine-data-in-ontario.
+
+Questions 2 to 5 use data from a McDonald’s Canada website that displays records for the last 14 days of incidents where they are aware of an employee testing positive for COVID-19. I used web scraping to collect this data (if there is time, we’ll talk about web scraping a bit next week). Link: https://news.mcdonalds.ca/covid-19-tracker/.
+
+```{r, echo = TRUE, message=FALSE}
+vaccines_ontario <- readRDS("data/vaccines_on.RDS")
+
+maccas <- read_csv("data/2021-01-20_mcdonalds-employees-covid.csv")
+
+canada <- readRDS("data/canada_provinces.RDS") %>% 
+  rename(province = "name")
+```
+
+```{r eval=FALSE, echo=FALSE}
+vaccines_ontario <- readRDS("inst/tutorials/w2_class/data/vaccines_on.RDS")
+
+maccas <- read_csv("inst/tutorials/w2_class/data/2021-01-20_mcdonalds-employees-covid.csv")
+
+canada <- readRDS("inst/tutorials/w2_class/data/canada_provinces.RDS") %>% 
+  rename(province = "name")
+```
+
+## Question 1 
+
+Suppose you want to plot the number of vaccines administered in Ontario each day. You also want to make the bars on your chart blue. You write the following code and get the below result.
+
+```{r, warning = FALSE}
+vaccines_ontario %>% 
+  mutate(report_date = date(report_date)) %>%  # make sure in date format
+  ggplot(aes(x = report_date, 
+             y = previous_day_doses_administered, color = "blue")) +
+  geom_bar(stat = "identity") + 
+  theme_minimal() +
+  labs(title = "Vaccines administered in Ontario, Canada", y = "Doses administerd on the previous day", "Report date") +
+  scale_x_date(labels = scales::date_format("%d %b %y"), 
+               limits = c(Sys.Date()-14, Sys.Date())) 
+```
+
+Which ONE of the following is the BEST description of what has gone wrong with this plot and how to fix it?
+
+**
+A. To change the colour of the bars `colour = "blue"` should be inside the `aes()` command within the `geom_bar()` instead.  
+B. To fill the inside of the bar `colour` should be changed to `fill` and the rest of the code left as is.  
+C. Instead of `colour = "blue"` inside the `aes()` it should be `fill = "blue"` outside, i.e., `ggplot(aes(x = report_date, y = previous_day_doses_administered), fill = "blue")`.  
+D. `colour = "blue"` should be removed from its current location and the geometry changed to: `geom_bar(stat = "identity", fill = "blue")`.
+**
+
+(You can test things out below if you wish.)
+
+```{r bar, exercise = TRUE}
+
+```
+
+
+```{r assumptions, include=FALSE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C"),
+         answer("D", correct = TRUE),
+         message = "If colour or fill is specified inside the aesthetic mapping, aes(), it should be mapping one of the variables to that aesthic. I.e., 'colour by' or 'fill by' this variable. To change the colour of the bars, the colour statement must be in the bar geometry and NOT within the aesthetic mapping."
+)
+```
+
+## Question 2
+
+McDonald's Canada has a website that displays records for the last 14 days of incidents where they are aware of an employee testing positive for COVID-19. I used web scraping to collect this data (if there is time, we'll talk about web scraping a bit next week). I've done some cleaning to prepare the data and the result is the dataset `maccas`. (Why is it called that? Because that is what everyone calls McDonald's in New Zealand.)
+
+```{r, maccasglimpse}
+knitr::kable(maccas)
+```
+
+Any time you see an error in a row, like a missing value or an entry that breaks the pattern, this is due to a randomly (I think) nested table in the HTML...basically just a weird set up choice. To get the correct dataset (at least in terms of dates, provinces and counts), we need to remove incorrect rows. Perform this manipulation to find out how many reports of McDonald's employees testing positive for COVID have occurred in the last 14 days. **Note: some of the `details` and `locations` variables will still be wrong**, but for now you want the dates, provices and counts to be correct. You can use the website to help you out. https://news.mcdonalds.ca/covid-19-tracker/. I claim that you can do this with one additional line of code added to the below
+
+(This data was last updates on the morning of January 20, 2021.)
+
+```{r, maccasclean, exercise = TRUE}
+maccas_clean <- maccas
+
+glimpse(maccas_clean)
+```
+
+**
+A. 12  
+B. 67  
+C. 80  
+D. 93
+**
+
+```{r, echo = FALSE}
+maccas_clean <- maccas %>% 
+  filter(!is.na(details))
+```
+
+
+## Question 3
+
+Consider this version of the McDonalds COVID data, `data_v1`.
+
+```{r echo = FALSE, meassage=FALSE}
+provinces <- c("British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Québec", "New Brunswick", "Prince Edward Island", "Nova Scotia", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut")  
+
+maccas_summary <- count(maccas_clean, province)
+
+maccas_one <- maccas_clean %>% 
+  count(date, province)
+
+province <- as_tibble(provinces)  %>% 
+  rename(province = "value")
+
+data_v1 <- full_join(maccas_clean, province, by = "province") %>% 
+  expand(date, province) %>% 
+  left_join(maccas_one, by = c("date", "province")) %>% 
+  pivot_wider(names_from = province, values_from = n) %>% 
+  filter(!is.na(date))
+
+```
+
+```{r, echo=TRUE}
+glimpse(data_v1)
+head(data_v1, n = 15)
+```
+
+Which one of the following is the best description of this data, with respect to 'tidiness'?
+
+**
+A. This data is not tidy because there are missing values.  
+B. This data is not tidy because each variable does not have one (and only one) column.  
+C. This data is not tidy because each observation has too many rows.  
+D. This data is tidy.
+**
+
+## Question 4
+
+Edit the map code below so that each province is coloured in by how number of employees testing positive (in the last 14 days) and answer for which province reports of McDonald's employees testing positive for COVID have occurred in the last 14 days. Note the comment in the first code chunk about this variable being called `n`.
+
+```{r, echo=TRUE}
+# This transforms and then joins information about the shape of the provinces, 
+## (so R can draw them) with the maccas data.
+canada <- sf::st_as_sf(canada) 
+
+maccas_summary <- maccas_clean %>% 
+  count(province) %>% # this will result in a column called n 
+                            # that has the counts you want to 
+                            # fill in the provinces by
+  full_join(canada, by = "province")
+```
+
+(This is what it currently produces.)
+
+```{r maccamapdisp, echo = FALSE}
+ggplot(maccas_summary, aes(geometry = geometry)) +
+  geom_sf() +
+  theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient(
+    name= "McDonald's employees tested  \n positive for COVID-19 \n (last 14 days)",
+    low = "yellow", high = "red", 
+    breaks = seq(0,40, by = 5))
+```
+
+```{r maccamap, exercise = TRUE}
+ggplot(maccas_summary, aes(geometry = geometry)) +
+  geom_sf() +
+  theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient(
+    name= "McDonald's employees tested  \n positive for COVID-19 \n (last 14 days)",
+    low = "yellow", high = "red", 
+    breaks = seq(0,40, by = 5))
+```
+
+Which province had the most reported cases of COVID-19 amongst McDonald's employees in the last 14 days?
+
+**
+A. Alberta  
+B. British Columbia  
+C. Ontario  
+D. Québec  
+**
+
+
+## Question 5
+
+Which ONE of the following statements about p-values is TRUE?
+
+**
+A. Suppose the P-value for a one sample t-test we conduct is 0.67. This means we can accept the null hypothesis for this test.  
+B. The size of a P-value gives us an indication of how suprised we are to observe a test statistic like ours, under the assumption that our null and alternative hypotheses are correct.  
+C. A small p-value is calculated when the area under in the tails(s) of our test distribution's probability density curve (e.g. a t-distribution), is small. The size of the tails are determined by the difference between the population parameter and the test statistic.  
+D. Saying you 'fail to reject the null hypothesis' is not the same as saying 'the null hypothesis is true'.
+**
+
+

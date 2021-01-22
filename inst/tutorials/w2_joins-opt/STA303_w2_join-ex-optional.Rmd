@@ -1,0 +1,132 @@
+---
+title: "STA303: W2 optional activity"
+subtitle: "More information on joins"
+output: learnr::tutorial
+css: "css/learnr_303.css"
+runtime: shiny_prerendered
+---
+
+## Set up and data
+
+Here are the required libraries and the datasets. Credit to Jenny Bryan and team's https://stat545.com/ for the inspiration for this data!
+
+```{r, echo=FALSE, message=FALSE}
+# These are the packages you will need for this activity
+packages_needed <- c("tidyverse", "learnr", "knitr")
+
+package.check <- lapply(
+  packages_needed,
+  FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+      install.packages(x, dependencies = TRUE, repos = "http://cran.us.r-project.org")
+    }
+  }
+)
+```
+
+
+```{r, message=FALSE}
+## Load the libraries
+
+library(palmerpenguins)
+library(tidyverse)
+
+## Create the datasets
+
+comic_characters <- tibble(
+  name = c("Spider Man", "Batman", "Hellboy", "Poison Ivy", "Iron Man", 
+           "Scarlet Witch", "Nightwing", "Harley Quinn", "The Sandman"),
+  gender = c("masculine", "masculine", "masculine", "feminine", 
+             "masculine", "feminine", "masculine", "feminine", "masculine"),
+  publisher = c("Marvel", "DC", "Dark Horse Comics", "DC", "Marvel", 
+                "Marvel", "DC", "DC", "DC")
+)
+
+publishers <- tibble(
+  publisher = c("DC", "Marvel"),
+  founded = c(1934, 1939)
+)
+
+knitr::kable(comic_characters)
+knitr::kable(publishers)
+
+```
+
+## Full joins
+
+* Full joins take all the rows from both datasets, matching where possible and just putting NAs where not. 
+* The order you put the datasets in will dictate the order of the columns in the resulting dataset. I.e. if you have `full_join(X, Y)` the columns from `X` will appear first, followed by the columns from `Y`.
+* Note also that if you don't specify a variable to join 'by', R will try to join by any variables that have the same names in both datasets. It will write a message to you telling you what it did. I prefer to be explicit, it reduces the risk of matching on things I hadn't realized had the same name, but didn't want to match on.
+
+**Try to predict the output before running each chunk**
+
+```{r full1, exercise = TRUE}
+full_join(comic_characters, publishers, by = "publisher")
+```
+
+```{r full2, exercise = TRUE}
+full_join(publishers, comic_characters)
+```
+
+So, in our example, we have all rows represented but an `NA` for date founded for Dark Horse Comics because they weren't in our `publishers` data set. Notice the order of the columns in the two examples and the additional message for the second one, `Joining, by = "publisher"`.
+
+\newpage
+## Left joins
+
+* Left joins take all the rows from the 'left' dataset, matching where possible and just putting NAs where not. The left dataset in `full_join(X, Y)` is `X.` If there is a level of the matching variable in `Y`, that isn't in `X`, it will be dropped.
+
+Equivalently, in the below, `X` is the 'left' dataset. The result of both these pieces of code is the same.
+
+```
+X %>% 
+  full_join(Y)
+```
+
+* As well as which rows are kept, the order you put the datasets in will dictate the order of the columns in the resulting dataset. I.e. if you have `full_join(X, Y)` the columns from `X` will appear first, followed by the columns from `Y`.
+* As above, if you don't specify a variable to join 'by', R will try to join by any variables that have the same names in both datasets.
+
+**Try to predict the output before running each chunk**
+
+```{r left1, exercise = TRUE}
+left_join(comic_characters, publishers, by = "publisher")
+```
+
+```{r left2, exercise = TRUE}
+left_join(publishers, comic_characters, by = "publisher")
+```
+So, in our example, in the result of the first join, we end up having have all rows from both datasets represented but an `NA` for date founded for Dark Horse Comics because they weren't in our `publishers` data set.
+
+In the result of our second join, because Dark Horse Comics wasn't in the 'left' dataset, we only have 8 rows (instead of 9) and no mention of Hellboy.
+
+Notice the order of the columns in the two examples, also.
+
+\newpage
+## Right joins
+
+* Right joins are like left joins, but they take all the rows from the 'right' dataset, matching where possible and just putting NAs where not. The right dataset in `full_join(X, Y)` is `Y`. If there is a level of the matching variable in `X`, that isn't in `Y`, it will be dropped.
+
+Equivalently, in the below, `Y` is the 'right' dataset. The result of both these pieces of code is the same.
+
+```
+X %>% 
+  full_join(Y)
+```
+
+* As well as which rows are kept, the order you put the datasets in will dictate the order of the columns in the resulting dataset. I.e. if you have `full_join(X, Y)` the columns from `Y` will appear first, followed by the columns from `X`.
+* As above, if you don't specify a variable to join 'by', R will try to join by any variables that have the same names in both datasets.
+
+**Try to predict the output before running each chunk**
+
+```{r right1, exercise = TRUE}
+right_join(comic_characters, publishers, by = "publisher")
+```
+
+```{r right2, exercise = TRUE}
+right_join(publishers, comic_characters, by = "publisher")
+```
+So, in the result of our first join, because Dark Horse Comics wasn't in the 'right' dataset, we only have 8 rows (instead of 9) and no mention of Hellboy.
+
+In our second join, we end up having have all rows from both datasets represented but an `NA` for date founded for Dark Horse Comics because they weren't in our `publishers` data set.
+
+Notice the order of the columns in the two examples, also.
+
