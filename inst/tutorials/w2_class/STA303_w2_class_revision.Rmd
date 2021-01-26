@@ -28,7 +28,12 @@ library(ggthemes)
 
 knitr::opts_chunk$set(echo = FALSE)
 
+vaccines_ontario <- readRDS("data/vaccines_on.RDS")
 
+maccas <- read_csv("data/2021-01-20_mcdonalds-employees-covid.csv")
+
+canada <- readRDS("data/canada_provinces.RDS") %>% 
+  rename(province = "name")
 ```
 
 ## Instructions
@@ -45,7 +50,7 @@ Question 1 looks at vaccine data for Ontario and is from https://data.ontario.ca
 
 Questions 2 to 5 use data from a McDonald’s Canada website that displays records for the last 14 days of incidents where they are aware of an employee testing positive for COVID-19. I used web scraping to collect this data (if there is time, we’ll talk about web scraping a bit next week). Link: https://news.mcdonalds.ca/covid-19-tracker/.
 
-```{r, echo = TRUE, message=FALSE}
+```{r, echo = TRUE, eval=FALSE, message=FALSE}
 vaccines_ontario <- readRDS("data/vaccines_on.RDS")
 
 maccas <- read_csv("data/2021-01-20_mcdonalds-employees-covid.csv")
