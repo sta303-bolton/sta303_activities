@@ -103,7 +103,7 @@ vaccines_ontario %>%
   mutate(report_date = date(report_date)) %>%  # make sure in date format
   ggplot(aes(x = report_date, 
              y = previous_day_doses_administered)) +
-  geom_bar(stat = "identity", color = "blue") + 
+  geom_bar(stat = "identity", fill = "blue") + 
   theme_minimal() +
   labs(title = "Vaccines administered in Ontario, Canada", 
        y = "Doses administered on the previous day", 
