@@ -52,12 +52,7 @@ library(polite)
 library(rvest)
 ```
 
-We're interested in scraping some data from the University of Toronto website. Specifically information on social media accounts.
-
-```{r openurl, exercise = TRUE}
-# run this chunk to open the website
-browseURL("https://www.utoronto.ca/social-media-directory/all")
-```
+We're interested in scraping some data from the University of Toronto website. Specifically information on social media accounts: https://www.utoronto.ca/social-media-directory/all.
 
 In the web scraping video for this week, we talked about checking the robots.txt. We can use the `polite` package to check, from within R, whether it seems like this part of the site is allowed to be scraped, based on the robots.txt. 
 
