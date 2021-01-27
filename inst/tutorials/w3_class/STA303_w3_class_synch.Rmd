@@ -135,11 +135,11 @@ D) YouTube
 
 ## Question 4
 
-Suppose when enrolling in STA303 you were randomly assigned to either a mandatory synchronous class or an asynchronous pre-recorded class and then final grades were compared between the two groups. Which ONE of the following is TRUE?
+Suppose when enrolling in STA303 you were randomly assigned to either a mandatory synchronous class or a totally asynchronous pre-recorded class and then final grades were compared between the two groups. Which ONE of the following is TRUE?
 
 **
 A) Any differences in grades between the groups must be due to random chance because participants were randomly assigned.  
-B) Random assignment hopefully means the two groups are comparable across potential confounding variables, like high school preparation or convenience of time zone.  
+B) Random assignment hopefully means the two groups are comparable across potential confounding variables, like previous preparation or convenience of time zone.  
 C) The fact the students have been randomly assigned means we could use this data as an empirical version of a null distribution for a hypothesis test.  
 D) As we have observed both the final grades and the group students were in, this is an example of a case-control study.
 **
