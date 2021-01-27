@@ -192,7 +192,7 @@ social_data &lt;- read_csv(&quot;scraped_data.csv&quot;)</code></pre>
 <div class="tutorial-exercise" data-label="social-data" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>glimpse(social_data)
 
-# your code here</code></pre>
+# your code here (week 2 content)</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <p><strong> A) Facebook<br />
@@ -232,7 +232,7 @@ package.check <- lapply(
   packages_needed,
   FUN = function(x) {
     if (!require(x, character.only = TRUE)) {
-      install.packages(x, dependencies = TRUE)
+      install.packages(x, dependencies = TRUE, repos = "http://cran.us.r-project.org")
     }
   }
 )
