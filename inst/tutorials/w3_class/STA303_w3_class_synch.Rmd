@@ -28,7 +28,6 @@ library(ggthemes)
 
 knitr::opts_chunk$set(echo = FALSE)
 
-setwd("/Users/lizabolton/Dropbox/U of T/STA 303/Weekly materials/Week 3/W3_class")
 social_data <- read_csv("scraped_data.csv")
 ```
 
