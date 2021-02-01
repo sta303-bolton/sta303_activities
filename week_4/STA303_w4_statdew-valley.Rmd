@@ -1,0 +1,734 @@
+---
+title: "STA303: W4 Statdew Valley"
+subtitle: "An exploration of correlated data through agriculture data"
+output: learnr::tutorial
+lib_dir: libs
+css: "css/learnr_303.css"
+runtime: shiny_prerendered
+---
+
+```{r, echo=FALSE, message=FALSE}
+# These are the packages you will need for this activity
+packages_needed <- c("tidyverse", "learnr", "knitr")
+
+package.check <- lapply(
+  packages_needed,
+  FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+      install.packages(x, dependencies = TRUE, repos = "http://cran.us.r-project.org")
+    }
+  }
+)
+```
+
+```{r, echo=FALSE, fig.align='center', out.width="100%"}
+knitr::include_graphics("images/w4/statdewvalley.png")
+```
+
+## Welcome to Statdew Valley!
+
+You're grandmother has asked you to take over her old farm plot in _Statdew Valley_. Armed with statistical knowledge, you set out to begin your new life!
+
+There are two of datasets for you to analyse to better understand the operation of your farm.
+
+Note: The final 'hint' for code chunks will be the solution.
+
+</br>
+</br>
+</br>
+</br>
+_Yes, this is totally an homage to [Stardew Valley](https://www.stardewvalley.net/). Have I played? No, but à la Girlfriend Reviews on YouTube, this is based on "what it's like to live with someone who plays Stardew Valley."_
+
+## [Optional] Create your character
+
+You can use R for so much more than just running regressions! This section is __totally optional__, and definitely __not assessed.__
+
+
+1. __Copy this code into a separate .Rmd__. It won't work from within a Shiny App (this interactive).  
+1. Save the .Rmd and make sure it is in a folder, not in your Home directory. Rmd files in your Home directory will cause interactives to fail.
+1. Choose an image to pixelate to get your character. You'll need to have a URL for it (or you could edit the code for a local file). I think it is easiest to upload to GitHub (or Google Photos) and then right click to copy the image address.
+1. Play with the Shiny app interface for the pixelart package to help you get the settings right.
+1. Update these settings in the code below.
+1. [Super super optional] Post your character on the optional discussion board for this week. , Or if you have a Stardew Valley character or some other pixel art of yourself, share that. Just for fun. Please be sensible about making sure it is _appropriate._ Don't use images of other people, etc. 
+
+```{r pixelart, eval=FALSE}
+# Install pixel art
+# More info: https://privefl.github.io/pixelart
+devtools::install_github("privefl/pixelart")
+# Install tidyverse if needed
+# install.package("tidyverse")
+
+library(magick)
+library(pixelart)
+library(tidyverse)
+
+# Upload a profile picture of yourself to GitHub or another service where you can then get the image address. With GitHub, you'll need to add ?raw=TRUE to the end of the URL (it is also what you get if you right click and select 'Copy Image Address' )
+
+# Here is an example of mine
+url = "https://github.com/sta303-bolton/other/blob/main/lb-for-statdew-valley.png?raw=true"
+
+# Run Shiny app for pixel art models
+# This should open in a new browser window
+# You can use it to play around with the settings and once you're mostly happy, update the settings below based on them
+pixelart::run_pixelart()
+
+url = "https://github.com/sta303-bolton/other/blob/main/lb-for-statdew-valley.png?raw=true"
+resize1 = 300
+resize2 = 40
+ncolors = 15
+color_bg = "#FFFFFF"
+saturation = 70
+degrees = 0
+left = 0
+top = 0
+right = 0
+bottom = 0
+
+
+# I made some changes to the plot_color_matrix function in the pixel art package to produce the look I wanted
+# Most of this code is the same as from that package. Credit to: Florian Privé, author and creator of the package. 
+plot_color_matrix <- function(raster){
+    rows <- seq_len(nrow(raster))
+    cols <- seq_len(ncol(raster))
+    cbind(expand.grid(y = rev(cols), x = rows), expand.grid(color = t(raster), 
+        stringsAsFactors = FALSE)) %>% ggplot() + geom_tile(aes_string("x", 
+        "y", fill = "I(color)")) + coord_equal() + theme_void()
+}
+
+im0 <- url %>% magick::image_read() %>% magick::image_background(color_bg) %>% 
+        crop(left = left, right = right, bottom = bottom, top = top) %>% 
+        magick::image_rotate(degrees) %>% magick::image_modulate(saturation = 120)
+
+im1 <- downsize(im0, resize1)
+
+# this can take a while to run
+kmeans <- kmeans_colors(im1, ncolors)
+
+im2 <- downsize(im0, resize2)
+
+plot_color_matrix(colors_kmeans(im2, kmeans))
+    
+```
+
+```{r, echo=FALSE, fig.align='center', out.width="25%"}
+knitr::include_graphics("images/w4/lb-for-statdew-valley.png")
+```
+
+```{r, echo=FALSE, fig.align='center', out.width="50%"}
+knitr::include_graphics("images/w4/lb-example.png")
+```
+
+
+
+Is this GOOD character pixel art? No. But I think it is cool that you can do image manipulation in R! 
+
+
+## Task 1: Tomatoes (part 1)
+
+Suppose your farm has a small experimental tomato patch. You are interested in knowing if there is any difference between the weight of tomatoes produced from plants that are fertilized with basic fertilizer vs tomatoes produced from plants that are fertilized with quality fertilizer.
+
+Tee patch has two plots, one for each fertilizer type. In each plot there are three tomato plants (all of the same species). Other growth influencing factors, like light exposure and precipitation are the same for each plot. 
+
+4 tomatoes were chosen at random from each plant and weighed (reported in grams). This data is stored in `tomatoes`.
+
+```{r, echo=FALSE, fig.align='center', out.width="100%"}
+knitr::include_graphics("images/w4/tomatoplot.png")
+```
+*Layout of tomato patch*
+
+```{r, echo=FALSE}
+tomatoes <- tibble(
+  plant = rep(1:6, each = 4),
+  fertilizer = rep(c("basic", "quality"), each = 12),
+  weight = c(123, 124, 128, 125,
+    135, 140, 129, 131,
+    146, 143, 142.5, 145,
+    135, 136, 150, 140.5,
+    160, 159, 161, 170,
+    162, 161, 152, 151))
+```
+
+```{r, echo = TRUE}
+glimpse(tomatoes)
+```
+
+### Plot the tomat-ah dat-ah
+
+Create a plot with plant on the x axis, weight on the y axis and coloured by fertilizer type. I also used `theme_minimal()` because I like the way it looks. This is just an exploratory plot for our benefit, so it can be a bit rough. No title, etc. 
+
+```{r tom_plot, exercise = TRUE}
+
+```
+
+```{r tom_plot-hint}
+tomatoes %>% 
+  ggplot(aes(x = plant, y = weight, colour = fertilizer)) +
+  # add some more code here
+
+
+```
+
+```{r tom_plot-solution}
+tomatoes %>% 
+  ggplot(aes(x = plant, y = weight, colour = fertilizer)) +
+  geom_point() +
+  theme_minimal()
+```
+
+
+*Note: We're going to take a pretty STA302 approach here. We'll start out by doing something WRONG and then improve it in the next section, still under the least squares framework. We can do this BECAUSE this is what is called a 'balanced data' design. That is, there is an equal number of observations in each combination of levels: 4 tomatoes per plant per fertilizer type plot.*
+
+
+#### The WRONG approach: fixed effects only
+
+
+**Fertilizer is our variable of interest**, so we need to include it in the model, but we might expect that tomatoes from the same plant are more similar to each other in weight than tomatoes from different plants. This also seems believable based on the plot. So, let's start by proposing a model like this:
+
+##### Model
+
+$$y_{i} = \alpha_j + \beta_k + \epsilon_{ijk}  $$
+
+where $y_{i}$ is the weight of the $i^{th}$ tomato from plant $k$ in fertilizer plot $j$. Here, $\alpha_j$ is the population mean weight for fertilizer plot $j$ and $\beta_k$ is the difference of plant $k$ from that mean. 
+
+The two longer horizontal lines in this graph represent $\alpha_{basic}$ and $\alpha_{quality}$ respectively. Each plant also has a shorter horizontal line shown which represents the mean weight of tomatoes from that plant. The distances (shown with the 6 vertical lines) are the $\beta$ values discussed above. (You're not required to be able to create this plot right now. If you're curious you can see the code in the .Rmd version of this activity.)
+
+```{r, echo=FALSE, fig.cap="*Figure: Visual representation of the equation for this data*"}
+tomatoes %>% 
+  group_by(plant) %>% 
+  mutate(plant_mean = mean(weight)) %>% 
+  group_by(fertilizer) %>% 
+  mutate(fert_mean = mean(weight)) %>% 
+  ungroup() %>% 
+  mutate(xstart = if_else(fertilizer == "basic", 0, 3.5)) %>% 
+  mutate(xend = ifelse(fertilizer == "basic", 3.5, 6.5)) %>% 
+  ggplot(aes(x = plant, y = weight, colour = fertilizer)) +
+  geom_point() +
+  theme_minimal() +
+  geom_errorbar(aes(ymin = fert_mean, ymax = plant_mean), colour = rep(c("darkred", "blue"), each = 12)) +
+  geom_segment(aes(x = xstart, xend = xend, y = fert_mean, yend = fert_mean, group = fertilizer), colour = rep(c("darkred", "blue"), each = 12))
+```
+
+Now, this probably looks a little different to how you've been writing models, but I hope it makes sense as describing the data that we're interested in.
+
+```{r tomatocheck1, echo=FALSE}
+question("Could we use this model to predict the average weight of tomatoes from a new plant (e.g. plant 7) grown in the quality fertilizer?",
+         answer("Yes"),
+         answer("No", correct = TRUE),
+         message = "We have no coefficient for plant 7, so no, this model as it is currently won't help us make predictions for any plants other than the ones we've observed."
+)
+```
+
+```{r tomatocheck2, echo=FALSE}
+question("Is this model identifiable as currently set out? That is, is there only one possible set of values that we could set these parameters to to get the correct response value?",
+         answer("Yes"),
+         answer("No", correct = TRUE),
+         message = "The $\\beta_k$ s are completely nested within our fertilizer levels, with three plants in the 'basic' fertilizer plot and three in the 'quality fertilizer plot'. Why is the a problem? In trying to fit these values, you'll end up with an infinite number of possible values, because you can add any value to $\\alpha_{basic}$ and subtract the same value from $\\beta_1$, $\\beta_2$ and $\\beta_3$ to get the same value of $y$. (Likewise for the 'quality' fertilizer plot and associated plants). Our model conceptualized in this way will not be identifiable."
+)
+```
+
+##### Let's try some models: Part 1
+
+1. Fit a model called `tom1` with `weight` as the outcome and `fertilizer` and `plant` as the predictors. Make sure `plant` is treated as a categorical (factor) variable, not numeric.
+1. Fit a model called `tom2` with `weight` as the outcome and and just `fertilizer` as the predictor. 
+1. Compare these models using ANOVA. 
+
+```{r tom_mod, exercise = TRUE}
+
+```
+
+```{r tom_mod-hint}
+# You can make a variable a factor by putting it in as_factor() from the forcats package (or as.factor() from base) right in your linear model.
+```
+
+```{r tom_mod-solution}
+tom1 <- lm(weight ~ as_factor(plant) + fertilizer, data = tomatoes)
+tom2 <- lm(weight ~ fertilizer, data = tomatoes)
+anova(tom1, tom2)
+```
+
+```{r tomatocheck3, echo=FALSE}
+result_tom1 <- anova(lm(weight ~ as_factor(plant) + fertilizer, data = tomatoes),  lm(weight ~ fertilizer, data = tomatoes))
+
+question("Is there any evidence against the hypothesis that a model with fertilizer alone fits the data as well as the model with both plant and fertilizer?",
+         answer("Yes, we have evidence against the fertilizer only model being just as good.", correct = TRUE),
+         answer("No, we can proceed with the fertilizer only model."),
+         message = str_c("The p-value from our ANOVA above, ", 
+                         sprintf("%.2e", result_tom1$`Pr(>F)`[2]), 
+                         ", suggests that there is strong evidence against there being no plant effect. Which means that we can't separate whether the fertilizer is having an effect or not, with this model. ")
+)
+```
+
+To emphasize the problem further, let's fit another model
+
+1. Fit `tom3`, that predicts `weight` with `plant` (as a factor) as the only independent variable.
+1. Run an anova to compare `tom1` and `tom3`
+
+```{r tom_same, exercise =TRUE}
+tom1 <- lm(weight ~ as_factor(plant) + fertilizer, data = tomatoes)
+
+```
+
+```{r tom_same-solution, exercise =TRUE}
+tom1 <- lm(weight ~ as_factor(plant) + fertilizer, data = tomatoes)
+tom3 <- lm(weight ~ as_factor(plant), data = tomatoes)
+anova(tom1, tom3)
+```
+
+```{r tomatocheck4, echo=FALSE}
+question("Think carefully about tom1 and tom2. Which ONE of the following statements is TRUE based on the results of your ANOVA, above?",
+         answer("We have very strong evidence against the claim that the plant only model fits the data as well as the model with plant and fertilizer."),
+         answer("We have no evidence against the claim that the plant only model fits the data as well as the model with plant and fertilizer, and so it appears there isn't a difference between the fertilizers."),
+         answer("Because of the nesting of plant within fertilizer, these models are actually really the SAME model and comparing them tells us nothing about the fertilizer.", correct = TRUE),
+         message = "These models actually are the SAME in terms of the information they have, because of the total nesting of plants within fertilizer plots. You'll notices the residual degrees of freedom are the same. So it is true that comparing them tells us nothing about fertilizer effects."
+)
+```
+
+### Summary
+
+Approaching our model in this way has several problems. 
+
+* Our model isn't __identifiable.__ In fact, if you run `summary(tom1)`, you'll see that the fertilizer coefficient in NA because of this! Oops.
+* What we can model isn't that useful to us, because it doesn't __generalize__ to any new plants. (E.g., we can't say anything about a plant 7.)
+* If we just fit the model is fertilizer, we know our __independence assumption__ is violated and don't know how much of a problem that will be for us. (Violated because we know observational units, tomatoes, are not independent when they come from the same plant.)
+
+So, do we give up on our first farming task?
+
+Nope!
+
+## Task 1: Tomatoes (part 2)
+
+### The RIGHT approach: mixed effects
+
+To approach this problem better, let us take a step back and realize that we really want to treat `fertilizer` and `plant` ___differently___. Fertilizer is a classic _fixed effect_ kind of variable. We want to be able to treat the parameter as fixed and we want to be able to use it to generalize so we can make claims about whether or not there is a difference between the fertilizers. Meanwhile, we're not _really_ that interested in the effects of each of these plants. We want information that will help us make decisions for future plants. What if we plant 20 new tomato plants? We want to be able make data driven claims in that case to. BUT we can't ignore the plant effects (independence assumption, as discussed).
+
+Our solution? __Treat plant effect as a random variable__. We can think of these 6 plants as drawn from the population of all tomato plants (of this species, in these conditions). We can then understand each of their effects as a independent observation from this distribution. 
+
+**Decision: We will model `fertilizer` as a fixed effect and `plant` as a random effect.**
+
+##### Model
+This looks like:
+$$ y_i = \alpha_j + b_k + \epsilon_i$$
+
+where, again, $y_{i}$ is the weight of the $i^{th}$ tomato from plant $k$ in fertilizer plot $j$. Here, $\alpha_j$ is again the population mean weight for fertilizer plot $j$ BUT $b_k \sim N(0, \sigma_b^2)$ and $\epsilon_i \sim N(0, \sigma^2)$. $b_k$ and $\epsilon_i$ are mutually independent.
+
+Because we're in 'statistical easy mode' (balanced design) with this example, we can actually achieve all of this in the framework of ordinary least squares you learned in STA302. FIRST we have to do some data manipulation.
+
+```{r tomatocheck2_1, echo=FALSE}
+question("Can you guess what we need to do to our data?",
+         answer("Calculate average weight by fertilizer type and refit with formula `weight_avg ~ plant`"),
+         answer("Calculate average weight by plant and refit with formula `weight_avg ~ fertilizer`", correct = TRUE),
+         answer("Calculate average weight by plant and fertilizer and refit with formula `weight_avg ~ 1`"),
+         message = "We want to aggregate the data such that we have one value for each plant, the average weight of tomatoes from that plant. Then we will fit the model with the formula weight_avg ~ fertilizer."
+)
+```
+
+1. Create a new dataset called `tom_agg` from the `tomataoes` dataset.
+1. Group by both fertilizer and plant. Because plant if fully nested in fertilizer, this is just a convenient way to keep the fertilizer variable in the dataset.
+1. Summarize so you get the mean tomato weight for each plant. Call this variable `weight_avg`.
+1. Run `glimpse(tom_agg)`.
+
+**Before you run the code, see if you can predict what the output should look like if you follow these instructions.**
+
+```{r tomatocheck2_2, echo=FALSE}
+question("What will the new `tom_agg` data set look like?",
+         answer("There will be one row for each plant, so 6 rows total. Three columns, for fertilizer, plant and weight_avg.", correct = TRUE),
+         answer("There will be one row for each plant and fertilizer combination, so 2*6 = 12 rows total. Three columns, for fertilizer, plant and weight_avg."),
+          answer("There will still be 24 rows and the original three columns, but now there will be an additional `weight_avg` column."),
+         answer("We can't predict how many rows there will be, but there should be 3 columns."),
+         message = "Run the code and see!"
+)
+```
+
+```{r tom_aggregate, exercise=TRUE}
+
+```
+
+```{r tom_aggregate-hint}
+# you can summarize to get the mean of a numeric variable with the following:
+summarize(weight_avg = mean(weight), .groups = "drop")
+
+# Note: you will have to make sure you pipe (%>%) the correctly group data in to this.
+# The .groups = "drop" will just prevent a warning as it explicitly says we don't want to keep the grouping by plant.
+```
+
+```{r tom_aggregate-solution}
+tom_agg <- tomatoes %>% 
+  group_by(fertilizer, plant) %>% 
+  summarize(weight_avg = mean(weight), .groups = "drop")
+
+glimpse(tom_agg)
+```
+
+Now that you've created the new appropriately aggregated dataset, `tom_agg`, use it to fit a model called `tom_final` that predicts `weight_avg` from `fertilizer`. Then run `summary()` on it. Calculate a 95% confidence interval for the effect of using quality fertilizer over basic fertilizer.
+
+```{r tom_mod_correct, exercise = TRUE, exercise.setup = "tom_aggregate"}
+
+```
+
+```{r tom_mod_correct-hint-1}
+# the formula should be weight_avg ~ fertilizer
+```
+
+```{r tom_mod_correct-hint-2}
+# you can find the 95% confidence interval for the coefficient
+# for the quality fertilizer using:
+### confint(tom_final)
+```
+
+```{r tom_mod_correct-solution}
+tom_final <- lm(weight_avg ~ fertilizer, data = tom_agg)
+summary(tom_final)
+confint(tom_final)
+```
+
+
+```{r tomatocheck2_final, echo=FALSE}
+question("Which one of the following statements about our results is correct?",
+         answer("We have weak evidence against the claim that fertilizer type has no effect on tomato weight."),
+         answer("It is plausible, at the 95% confidence level, that on average, quality fertilizer produces tomatoes that are 10 grams heavier than tomatoes grown in basic fertilizer."),
+          answer("At the 5% significance level we fail to reject the hypothesis that the average weight of tomatoes grown each fertilizer type is the same."),
+         answer("Using a 5% significance level here, there is a chance that we are making a type II error."),
+         answer("More than one of the above.", correct = TRUE),
+         message = "All of these are actually correct!   A) If using a 'strength' approach instead of a reject/fail to reject, we often say a p-value between 0.1 and 0.05 is 'weak evidence'.   B) 10 is in our 95% confidence interval, so it is a 'plausible' or believable value, because a CI is a range of plausible values for our parameter.   C) Our p-value is larger than 0.05, so we fail to reject it at the 5% level.  D) Because we are failing to reject the null, there is a chance that we're wrong, and we SHOULD have rejected the null. Failing to reject the null when you should is a type II error. I remember this with 'fail **2** reject -> type **2**'."
+)
+```
+
+#### Variance of our random effect
+
+When we are conducting mixed effects models, we're often interested in the variability of our random effects. So, we want to estimate $\sigma_b^2$ from the model above.
+
+Firstly, we can think about what variability that isn't explained by our fixed effects. This is our *residual* variance. We get this from squaring the residual standard error in `tom_final`. This value is actually partitioned into two independent sources of variability, $\hat{\sigma}^2$, the variance of our random error, and $\hat{\sigma_b}^2$, the variance of our random effect. 
+
+While you can derive this yourself if you like, let's also take as true the following:
+$$\frac{\text{RSS}_{tom\_final}}{4} = \hat{\sigma_b}^2 + \frac{\hat{\sigma}^2}{4} $$.
+
+
+```{r, include = TRUE}
+tom_agg <- tomatoes %>% 
+  group_by(fertilizer, plant) %>% 
+  summarize(weight_avg = mean(weight), .groups = "drop")
+
+tom_final <- lm(weight_avg ~ fertilizer, data = tom_agg)
+summary(tom_final)
+
+# Get the RSS and divide by DF
+overall_var <- summary(tom_final)$sigma^2/4
+overall_var
+```
+
+Secondly, we actually have an estimate of $\hat{\sigma}^2$ from the model we fit right at the beginning, `tom1`. This is the variance we can't account for even after fitting both `plant` and `fertilizer` as fixed effects.
+
+$\hat{\sigma}^2 = \frac{\text{RSS}_{tom1}}{\text{DF}_{tom1}}$
+
+
+(This is just from our usual linear model theory. $\sigma = \text{RSE} = \sqrt{\frac{\text{RSS}}{DF}}$, so $\sigma^2 = \text{RSE}^2 = \frac{\text{RSS}}{DF}$)
+
+
+```{r, include = TRUE}
+tom1 <- lm(weight ~ as.factor(plant) + fertilizer, data = tomatoes)
+summary(tom1)
+
+# Get the RSS (square of the residual standard error) and divide by DF
+error_var <- summary(tom1)$sigma^2/4
+error_var
+```
+
+The unexplained variability in our final model can be partitioned into the plant-to-plant variability and the random error variability. The random error variance is divided by the degrees of freedom of the final model.
+$$\text{RSE}_{tom\_final}^2 = \frac{\text{RSS}_{tom\_final}}{4} = \hat{\sigma_b}^2 +  \frac{\hat{\sigma}^2}{4}$$
+
+$$ = \hat{\sigma_b}^2 + \frac{\text{RSS}_{tom1}}{18}\cdot\frac{1}{4}$$
+
+$$\hat{\sigma_b}^2 = \text{RSE}_{tom\_final}^2 - \text{RSE}^2_{tom1} \cdot\frac{1}{4}$$
+
+
+```{r inclue = TRUE}
+# Let's calculate the variance of the plant effect
+plant_effect_var <- overall_var - error_var/4
+plant_effect_var
+```
+
+So, $\hat{b} \sim N(0,$ `r round(plant_effect_var, 2)` $)$ . As you might expect, a lot of the variance in tomato weight that we can't account for just based on the fertilizer is due to plant-to-plant variation
+
+## Task 2: Life is sweet as honey
+
+Your grandmother was a bit eccentric when it came to farm management. She swore that her bees produced more honey if she played them music in the morning. In fact, she even mentioned that she thought they particularly liked K-pop. 
+
+She left you some data that she thinks proves this. While the sample size isn't that large, you decide to take a look anyways. The data is called `honey` and records the honey produced each month for each of her 6 hives (in grams). Each hive listened to each of the song options (Dynamite by BTS, Adagio in B minor by Mozart and No music) for a month, three times. The order was randomized for each hive. It took 9 months to collect this data and the information your grandmother left you says honey production should have been fairly constant over this period and that all the hives experienced the same weather conditions, food access, etc.
+
+(Note: this is definitely not accurate to how beekeeping or weather actually works...but ignore this for our purposes.)
+
+```{r, echo=FALSE, fig.align='center', out.width="10%"}
+knitr::include_graphics("images/w4/hive.png")
+```
+
+```{r, echo = FALSE}
+set.seed(95)
+honey <- tibble(
+  hive = rep(rep(1:6, each = 3), times = 3),
+  song = rep(c("No music", "Adagio in B minor by Mozart", "Dynamite by BTS"), each = 18),
+  honey_g = c(196.56,199.58,200.71,195.8,199.58,200.71,226.8,227.55,220.75,193.15,197.69,190.13,192.4,195.8,194.29,175.39,169.34,185.97,234.73,236.62,241.92,225.66,226.8,223.02,259.3,248.72,263.46,238.89,237.38,235.11,244.94,245.7,247.21,165.18,167.07,162.54,255.15,254.01,252.88,232.47,233.22,235.49,267.62,266.86,268.38,242.29,250.23,241.92,272.53,272.16,268.75,234.36,232.09,228.69))
+
+```
+
+```{r, echo = FALSE, eval = FALSE}
+library(nlme)
+data(Machines)
+
+              
+              c(22.3,28.6,15,21.1,27.3,22.3,
+              18.9,18.5,22.8,14.5,20.8,20.3,
+              17.7,16.3,24,13.7,21.8,19.3)
+ # honey = round(c(runif(6, min = 20, max = 35), 
+ #                     c(runif(6, min = 17, max = 22)),
+ #                     c(runif(6, min = 10, max = 24))), 1)
+              
+Machines$score
+glue::glue_collapse(round(Machines$score*0.453592/12*100, 2), sep = ",")
+
+```
+
+
+```{r, include = TRUE}
+glimpse(honey)
+```
+
+
+### Wrangle and plot the data
+
+##### Wrangle
+1. Wrangle the honey data so that the `song` variable is a factor in this order: No music, Adagio in B minor by Mozart and Dynamite by BTS. 
+1. Make `hive` a factor variable also.
+1. Save this over the original honey dataset.
+1. Then, using your new version of the `honey` dataset, create a new dataset called `honey_agg`, where you group by `hive` and `song` and summarize to find the average amount of honey produced by each hive while listening to a given song. Call your averaged variable `honey_avg`.
+
+```{r bee_wrangle, exercise = TRUE}
+
+
+```
+
+```{r bee_wrangle-hint-1}
+# This hint is with respect to the fctor variables.
+
+# For song I used fct_relevel inside a mutate
+  mutate(song = fct_relevel(song, "No music", after = 0))
+
+# For hive I just had to set it to be a factor 
+  mutate(hive = as_factor(hive))
+  
+# In both cases I am saving over the original variables.
+```
+
+```{r bee_wrangle-hint-2}
+# the new honey dataset should be created like this
+honey <- honey %>% 
+  mutate(song = fct_relevel(song, "No music", after = 0)) %>% 
+  mutate(hive = as_factor(hive)) 
+```
+
+```{r bee_wrangle-hint-3}
+# the aggregated dataset should be created like this
+honey_agg <- honey %>%   
+  group_by(hive, song) %>% 
+  summarize(honey_avg = mean(honey_g), .groups = "drop") 
+```
+
+
+```{r bee_wrangle-solution}
+honey <- honey %>% 
+  mutate(song = fct_relevel(song, "No music", after = 0)) %>% 
+  mutate(hive = as_factor(hive)) 
+  
+honey_agg <- honey %>%   
+  group_by(hive, song) %>% 
+  summarize(honey_avg = mean(honey_g), .groups = "drop") 
+```
+
+##### Plot
+
+1. Plot the honey data with `song` on the x axis and `honey_avg` on the y axis.
+1. In your aesthetic, you should also colour by hive and group by hive. (See the hint if you get stuck).
+1. Use the point and line geometries.
+1. Use `theme_minimal()` if you like.
+
+```{r bee_plot, exercise = TRUE, exercise.setup = "bee_wrangle"}
+
+```
+
+```{r bee_plot-hint-1}
+# This is what my aesthetic mapping looks like
+# aes(x = song, y = honey, colour = hive, group = hive)
+```
+
+```{r bee_plot-hint-2}
+# the two geometries you want are geom_point() and geom_line()
+```
+
+```{r bee_plot-solution}
+# This assumes you've run the correct code for the wrangling above
+honey_agg %>% 
+  ggplot(aes(x = song, y = honey_avg, colour = hive, group = hive)) +
+  geom_point() +
+  geom_line() +
+  theme_minimal()
+```
+
+We've actually made an interaction plot for our data. There is a function in the core `stats` package that also does this for us.
+
+```{r, include = TRUE}
+interaction.plot(honey$song, honey$hive, honey$honey_g)
+```
+
+
+```{r beecheck1, echo=FALSE}
+question("What has us worried about the independence assumption if we were just going to do regression as usual?",
+         answer("We don't expect honey production while listening to the same song to be independent."),
+         answer("We don't expect production for a given hive to be independent from month to month.", correct = TRUE),
+         answer("We don't expect these observations to be independent because they all experienced the same weather conditions and food availability."),
+          answer("No concerns about the independence assumption."),
+         message = "We expect that some hives will be more productive than others, naturally; a 'hive' effect. We want to estimate if there is in fact an effect of song, so that isn't an independence violation. We're glad the other conditions that could affect honey production were similar across the whole period for all hives as this means any difference we see is likely due to song effect (once we account for hive effect), not weather fluctuations."
+)
+```
+
+
+This data is an example of __crossed effects__, because every hive experiences every level of the 'treatment', i.e. each hive listens to each song.
+
+
+```{r beecheck2, echo=FALSE}
+question("What would a completely nested version of this study look like?",
+         answer("This is both nested and crossed already."),
+         answer("Assign hives 1, 2 and to listen to randomly swap between no music for  and then Mozart for 9 months. Hives 4, 5 and 6 would be similar but BTS instead of Mozart."),
+         answer("Repeated measures (x9) of honey production for the same hive, listening to the same song, for 9 months.", correct = TRUE),
+          answer("Not possible to design a nested version."),
+         message = "You can't be nested and crossed for the same grouping variable. A fully nested version of this would be much like our tomato study, with two hives assigned to each song."
+)
+```
+
+### Model formula
+
+This looks like:
+$$ y_{ijk} = \mu + \alpha_i + b_{j} + + (\alpha b)_{ij} + \epsilon_{ijk}$$
+
+where $y_{ijk}$ is the amount of honey produced (in grams) in the $k^{th}$ month by the $j^{th}$ hive while listening to song $i$. Here, $\mu$ is the grand mean of honey production, $\alpha_i$ are the $I$ fixed effects for `song` and $b_j$ are the random effects for hive $j$. $(\alpha b)_{ij}$ are the $IJ$ interaction terms for the interaction between the the hive and the song. What does this represent here? Well, maybe some hives respond to a certain song quite differently to other hives. $(\alpha b)_{ij}$ is a random effect because any term involving a random effect must also be a random effect. $(\alpha b)_{ij} ~ \sim N(0, \sigma^2_{\alpha b})$, $b_k \sim N(0, \sigma_b^2)$ and $\epsilon_{ijk} \sim N(0, \sigma^2)$. All the random effects are mutually independent random variables.
+
+#### Fit the models
+
+1. Fit an interaction model to predict honey production based on `song` and `hive`. Call it `bee_int`.
+1.Fit a main effects model to predict honey production based on `song` and `hive` (no interaction). Call it `bee_main`.
+1. Compare these two models with ANOVA.
+
+```{r bee_mod, exercise = TRUE, exercise.setup = "bee_wrangle"}
+
+```
+
+```{r bee_mod-solution}
+bee_int <- lm(honey_g ~ song*hive, data = honey)
+bee_main <- lm(honey_g ~ song + hive, data = honey)
+anova(bee_int, bee_main)
+```
+
+```{r beecheck4, echo=FALSE}
+question("What do you think we can claim from the analysis above?",
+         answer("It seems unlikely that the variance for the interaction terms is 0.", correct = TRUE),
+         answer("There is no evidence against the hypothesis that the main effects model fits the data as well as the interaction model."),
+         answer("These models are not identifiable."),
+         message = "Because the the model with the interaction explains the data significantly better than the main effects only model, we can say it seems like the variability explained by the interaction is going to be important, i.e. we need interaction terms because they aren't all the same value (which is how we'd have zero variance). These models are identifiable. (Run a summary on them, you'll get no errors.)"
+)
+```
+
+#### Model with our aggregated data
+
+1. Run a new model using the `honey_agg` data, where `honey_avg` is the response and song and hive are fixed effects, no interactions. Save the model as `bee_agg_mod`.
+1. Run an ANOVA on `bee_agg_mod`.
+
+```{r bee_agg_mod, exercise = TRUE, exercise.setup = "bee_wrangle"}
+
+```
+
+
+```{r, bee_agg_mod-solution}
+bee_agg_mod <- lm(honey_avg ~ song + hive, data = honey_agg)
+anova(bee_agg_mod)
+```
+
+The very low p-values you'll see above suggest that we can also reject $H_0: \sigma^2_b = 0$ and $H_0: \alpha_{BTS} = \alpha_{Mozart} = \alpha_{no\ song} = 0$ because it seems plausible that there is hive-to-hive variation, and that there are differences in honey production between the songs.
+
+### Calculating our random effect variances
+
+In this section I'm just going claim a couple equations for how we can partition (separate into components) the unexplained variation in the models we have fit. We'll go into the math of these variances as we need it next week. There is plenty that R will do for us, and things will get a little messier when we leave the safety of balanced designs. See the Wood reading referenced in the credits if you want to cover this further now. Optional, not assessed.
+
+Basically, I want you to take away from this section that we can estimate how much our different sources of variations are each contributing to our overall variation.
+
+Our unexplained variability, after fitting the interaction model, `bee_int`, gives us our $\sigma^2$, i.e., the variability of the error term is $\sigma^2 = 3.63^2$.
+
+```{r beesummary}
+honey <- honey %>% 
+  mutate(song = fct_relevel(song, "No music", after = 0)) %>% 
+  mutate(hive = as_factor(hive)) 
+  
+honey_agg <- honey %>%   
+  group_by(hive, song) %>% 
+  summarize(honey_avg = mean(honey_g), .groups = "drop") 
+
+bee_int <- lm(honey_g ~ song*hive, data = honey); summary(bee_int)
+bee_main <- lm(honey_g ~ song + hive, data = honey); summary(bee_main)
+bee_agg_mod <- lm(honey_avg ~ song + hive, data = honey_agg); summary(bee_agg_mod)
+```
+
+$$\sigma^2 = $$
+```{r, include = TRUE}
+# unexplained variation after fitting the most complicated model
+summary(bee_int)$sigma^2
+```
+
+$$\text{RSE}_{bee\_main}^2 = \sigma_{\alpha b}^2 + \frac{\sigma^2}{K} $$
+
+$$\sigma_{\alpha b}^2 = \text{RSE}_{bee\_main}^2 - \frac{\sigma^2}{K} = $$
+
+```{r, include = TRUE}
+# variation explained by the interaction of song and hive
+# k is the number of songs
+summary(bee_main)$sigma^2 - (summary(bee_int)$sigma^2) / 3
+```
+
+Finally, to get $\sigma^2_{b}$ we do one final aggregation and model:
+
+```{r}
+honey_agg2 <- honey_agg %>% 
+  group_by(hive) %>% 
+  summarize(honey_avg2 = mean(honey_avg), .gropus = "drop")
+honey_agg2
+
+honey_hive <- lm(honey_avg2 ~ 1, data = honey_agg2); summary(honey_hive)
+
+# Notice that the RSE here is just the variance of the avergage honey production for each hive
+sqrt(var(honey_agg2$honey_avg2))
+```
+
+$$ \sigma_b^2 = \text{RSE}_{honey\_hive}^2 - \frac{\text{RSE}_{bee\_main}^2}{K}$$
+
+```{r}
+# hive to hive variation, not explained by song
+# k is the number of songs
+summary(honey_hive)$sigma^2 - (summary(bee_main)$sigma^2)/3
+```
+
+```{r beecheck3, echo=FALSE}
+question("Which of our random effects explains the greatest variance in the honey production, after controlling for our fixed effects?",
+         answer("Variations in the interaction between the hives and songs."),
+         answer("Random noise."),
+         answer("Hive-to-hive variability.", correct = TRUE),
+         answer("Impossible to say."),
+         message = "Of the three variances for our random effects, the variance for the hive effect is the largest, and so explains the greatest proportion of the variability in honey production not explained by the song differences."
+)
+```
+
+#### Optional
+
+Do you think you have enough information to come to a conclusion about whether the playing music improves honey production? Do your grandmother's bees actually like k-pop best of the options?
+
+## Credits
+
+* The commentary for this activity draws heavily on section 2.1 of 
+Wood, S. Generalized Additive Models: An Introduction with R, 2nd Edition. 2017. https://ebookcentral-proquest-com.myaccess.library.utoronto.ca/lib/utoronto/detail.action?docID=4862399 (requires you to log in with your UTORid). 
+* Overall concept based on the [Stardew Valley](https://www.stardewvalley.net/) game.
+* Stardew Valley images from https://stardewcommunitywiki.com. 
