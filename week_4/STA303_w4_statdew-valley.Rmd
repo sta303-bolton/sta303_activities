@@ -1,6 +1,6 @@
 ---
 title: "STA303: W4 Statdew Valley"
-subtitle: "An exploration of correlated data through agriculture data"
+subtitle: "An exploration of correlated data through agriculture"
 output: learnr::tutorial
 lib_dir: libs
 css: "css/learnr_303.css"
@@ -39,7 +39,7 @@ Note: The final 'hint' for code chunks will be the solution.
 </br>
 _Yes, this is totally an homage to [Stardew Valley](https://www.stardewvalley.net/). Have I played? No, but à la Girlfriend Reviews on YouTube, this is based on "what it's like to live with someone who plays Stardew Valley."_
 
-## [Optional] Create your character
+## Optional: Create your 16 bit character
 
 You can use R for so much more than just running regressions! This section is __totally optional__, and definitely __not assessed.__
 
@@ -49,14 +49,18 @@ You can use R for so much more than just running regressions! This section is __
 1. Choose an image to pixelate to get your character. You'll need to have a URL for it (or you could edit the code for a local file). I think it is easiest to upload to GitHub (or Google Photos) and then right click to copy the image address.
 1. Play with the Shiny app interface for the pixelart package to help you get the settings right.
 1. Update these settings in the code below.
-1. [Super super optional] Post your character on the optional discussion board for this week. , Or if you have a Stardew Valley character or some other pixel art of yourself, share that. Just for fun. Please be sensible about making sure it is _appropriate._ Don't use images of other people, etc. 
+1. [Super super optional] Post your character on the [optional discussion board for this week](https://q.utoronto.ca/courses/204826/discussion_topics/1061843?module_item_id=2273817). If you have a Stardew Valley character or some other pixel art of yourself, you can share that, too. This is just for fun, no requirement to participate. Please be sensible about making sure any images are _appropriate._ Don't use images of other people, etc. 
 
 ```{r pixelart, eval=FALSE}
 # Install pixel art
 # More info: https://privefl.github.io/pixelart
 devtools::install_github("privefl/pixelart")
-# Install tidyverse if needed
-# install.package("tidyverse")
+
+# Install tidyverse if you haven't
+# install.packages("tidyverse")
+
+# Install magick if you haven't
+# install.packages("magick")
 
 library(magick)
 library(pixelart)
@@ -725,6 +729,12 @@ question("Which of our random effects explains the greatest variance in the hone
 #### Optional
 
 Do you think you have enough information to come to a conclusion about whether the playing music improves honey production? Do your grandmother's bees actually like k-pop best of the options?
+
+## Where to next?
+
+We've done pretty much everything we can while remaining in the ordinary least squares context, and even in the simplest examples, all the aggregrating and model fitting we're doing will get a little tedious. Next week we will turn to fitting linear mixed models more sophisticatedly with specialist packages.
+
+The models we'll be fitting will rely on maximum likelihood methods. 
 
 ## Credits
 
