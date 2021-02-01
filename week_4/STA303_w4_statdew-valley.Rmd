@@ -158,7 +158,7 @@ glimpse(tomatoes)
 
 ### Plot the tomat-ah dat-ah
 
-Create a plot with plant on the x axis, weight on the y axis and coloured by fertilizer type. I also used `theme_minimal()` because I like the way it looks. This is just an exploratory plot for our benefit, so it can be a bit rough. No title, etc. 
+Create a plot with `plant` on the x axis, `weight` on the y axis and coloured by `fertilizer` type. Choose a sensible geometry. I also used `theme_minimal()` because I like the way it looks. This is just an exploratory plot for our benefit, so it can be a bit rough. No title, etc. 
 
 ```{r tom_plot, exercise = TRUE}
 
@@ -190,7 +190,7 @@ tomatoes %>%
 
 ##### Model
 
-$$y_{i} = \alpha_j + \beta_k + \epsilon_{ijk}  $$
+$$y_{i} = \alpha_j + \beta_k + \epsilon_{i}  $$
 
 where $y_{i}$ is the weight of the $i^{th}$ tomato from plant $k$ in fertilizer plot $j$. Here, $\alpha_j$ is the population mean weight for fertilizer plot $j$ and $\beta_k$ is the difference of plant $k$ from that mean. 
 
@@ -272,18 +272,18 @@ tom1 <- lm(weight ~ as_factor(plant) + fertilizer, data = tomatoes)
 
 ```
 
-```{r tom_same-solution, exercise =TRUE}
+```{r tom_same-solution}
 tom1 <- lm(weight ~ as_factor(plant) + fertilizer, data = tomatoes)
 tom3 <- lm(weight ~ as_factor(plant), data = tomatoes)
 anova(tom1, tom3)
 ```
 
 ```{r tomatocheck4, echo=FALSE}
-question("Think carefully about tom1 and tom2. Which ONE of the following statements is TRUE based on the results of your ANOVA, above?",
+question("Think carefully about tom1 and tom3. Which ONE of the following statements is TRUE based on the results of your ANOVA, above?",
          answer("We have very strong evidence against the claim that the plant only model fits the data as well as the model with plant and fertilizer."),
          answer("We have no evidence against the claim that the plant only model fits the data as well as the model with plant and fertilizer, and so it appears there isn't a difference between the fertilizers."),
          answer("Because of the nesting of plant within fertilizer, these models are actually really the SAME model and comparing them tells us nothing about the fertilizer.", correct = TRUE),
-         message = "These models actually are the SAME in terms of the information they have, because of the total nesting of plants within fertilizer plots. You'll notices the residual degrees of freedom are the same. So it is true that comparing them tells us nothing about fertilizer effects."
+         message = "These models actually are the SAME in terms of the information they have, because of the total nesting of plants within fertilizer plots. You'll notice the residual degrees of freedom are the same. So it is true that comparing them tells us nothing about fertilizer effects."
 )
 ```
 
@@ -303,9 +303,9 @@ Nope!
 
 ### The RIGHT approach: mixed effects
 
-To approach this problem better, let us take a step back and realize that we really want to treat `fertilizer` and `plant` ___differently___. Fertilizer is a classic _fixed effect_ kind of variable. We want to be able to treat the parameter as fixed and we want to be able to use it to generalize so we can make claims about whether or not there is a difference between the fertilizers. Meanwhile, we're not _really_ that interested in the effects of each of these plants. We want information that will help us make decisions for future plants. What if we plant 20 new tomato plants? We want to be able make data driven claims in that case to. BUT we can't ignore the plant effects (independence assumption, as discussed).
+To approach this problem better, let us take a step back and realize that we really want to treat `fertilizer` and `plant` ___differently___. Fertilizer is a classic _fixed effect_ kind of variable. We want to be able to treat the parameter as fixed and we want to be able to use it to generalize so we can make claims about whether or not there is a difference between the fertilizers. Meanwhile, we're not _really_ that interested in the effects of each of these plants. We want information that will help us make decisions for future plants. What if we plant 20 new tomato plants? We want to be able make data driven claims in that case, too, not just for these 6 plants. BUT we also can't ignore the plant effects (independence assumption, as discussed).
 
-Our solution? __Treat plant effect as a random variable__. We can think of these 6 plants as drawn from the population of all tomato plants (of this species, in these conditions). We can then understand each of their effects as a independent observation from this distribution. 
+Our solution? __Treat plant effect as a random variable__. We can think of these 6 plants as drawn from the population of all tomato plants (of this species, in these conditions). We can then understand each of their effects as an independent observation from this distribution. 
 
 **Decision: We will model `fertilizer` as a fixed effect and `plant` as a random effect.**
 
@@ -326,12 +326,12 @@ question("Can you guess what we need to do to our data?",
 )
 ```
 
-1. Create a new dataset called `tom_agg` from the `tomataoes` dataset.
-1. Group by both fertilizer and plant. Because plant if fully nested in fertilizer, this is just a convenient way to keep the fertilizer variable in the dataset.
+1. Create a new dataset called `tom_agg` from the `tomatoes` dataset.
+1. Group by both fertilizer and plant. Because plant is fully nested in fertilizer, this is just a convenient way to keep the fertilizer variable in the dataset.
 1. Summarize so you get the mean tomato weight for each plant. Call this variable `weight_avg`.
 1. Run `glimpse(tom_agg)`.
 
-**Before you run the code, see if you can predict what the output should look like if you follow these instructions.**
+**Before you run the code, see if you can predict what the output should look based on these instructions.**
 
 ```{r tomatocheck2_2, echo=FALSE}
 question("What will the new `tom_agg` data set look like?",
@@ -393,7 +393,7 @@ question("Which one of the following statements about our results is correct?",
           answer("At the 5% significance level we fail to reject the hypothesis that the average weight of tomatoes grown each fertilizer type is the same."),
          answer("Using a 5% significance level here, there is a chance that we are making a type II error."),
          answer("More than one of the above.", correct = TRUE),
-         message = "All of these are actually correct!   A) If using a 'strength' approach instead of a reject/fail to reject, we often say a p-value between 0.1 and 0.05 is 'weak evidence'.   B) 10 is in our 95% confidence interval, so it is a 'plausible' or believable value, because a CI is a range of plausible values for our parameter.   C) Our p-value is larger than 0.05, so we fail to reject it at the 5% level.  D) Because we are failing to reject the null, there is a chance that we're wrong, and we SHOULD have rejected the null. Failing to reject the null when you should is a type II error. I remember this with 'fail **2** reject -> type **2**'."
+         message = "All of these are actually correct!   A) If using a 'strength' approach instead of a reject/fail to reject one, we often say a p-value between 0.1 and 0.05 is 'weak evidence'.   B) 10 is in our 95% confidence interval, so it is a 'plausible' or believable value, because a CI is a range of plausible values for our parameter.   C) Our p-value is larger than 0.05, so we fail to reject it at the 5% level.  D) Because we are failing to reject the null, there is a chance that we're wrong, and we SHOULD have rejected the null. Failing to reject the null when you should is a type II error. I remember this with 'fail **2** reject -> type **2**'."
 )
 ```
 
@@ -406,6 +406,7 @@ Firstly, we can think about what variability that isn't explained by our fixed e
 While you can derive this yourself if you like, let's also take as true the following:
 $$\frac{\text{RSS}_{tom\_final}}{4} = \hat{\sigma_b}^2 + \frac{\hat{\sigma}^2}{4} $$.
 
+THe following just reruns the final code from the tasks above so I cna use it.
 
 ```{r, include = TRUE}
 tom_agg <- tomatoes %>% 
@@ -415,8 +416,8 @@ tom_agg <- tomatoes %>%
 tom_final <- lm(weight_avg ~ fertilizer, data = tom_agg)
 summary(tom_final)
 
-# Get the RSS and divide by DF
-overall_var <- summary(tom_final)$sigma^2/4
+# Get the RSE and square it
+overall_var <- summary(tom_final)$sigma^2
 overall_var
 ```
 
@@ -425,15 +426,15 @@ Secondly, we actually have an estimate of $\hat{\sigma}^2$ from the model we fit
 $\hat{\sigma}^2 = \frac{\text{RSS}_{tom1}}{\text{DF}_{tom1}}$
 
 
-(This is just from our usual linear model theory. $\sigma = \text{RSE} = \sqrt{\frac{\text{RSS}}{DF}}$, so $\sigma^2 = \text{RSE}^2 = \frac{\text{RSS}}{DF}$)
+(This is just from our usual linear model theory. $\hat{\sigma} = \text{RSE} = \sqrt{\frac{\text{RSS}}{DF}}$, so $\hat{\sigma}^2 = \text{RSE}^2 = \frac{\text{RSS}}{DF}$)
 
 
 ```{r, include = TRUE}
 tom1 <- lm(weight ~ as.factor(plant) + fertilizer, data = tomatoes)
 summary(tom1)
 
-# Get the RSS (square of the residual standard error) and divide by DF
-error_var <- summary(tom1)$sigma^2/4
+# Get the RSE and square it
+error_var <- summary(tom1)$sigma^2
 error_var
 ```
 
@@ -601,7 +602,7 @@ This data is an example of __crossed effects__, because every hive experiences e
 question("What would a completely nested version of this study look like?",
          answer("This is both nested and crossed already."),
          answer("Assign hives 1, 2 and to listen to randomly swap between no music for  and then Mozart for 9 months. Hives 4, 5 and 6 would be similar but BTS instead of Mozart."),
-         answer("Repeated measures (x9) of honey production for the same hive, listening to the same song, for 9 months.", correct = TRUE),
+         answer("Repeated measures (x9) of honey production on each hive, listening to the same song, for 9 months.", correct = TRUE),
           answer("Not possible to design a nested version."),
          message = "You can't be nested and crossed for the same grouping variable. A fully nested version of this would be much like our tomato study, with two hives assigned to each song."
 )
@@ -699,7 +700,7 @@ Finally, to get $\sigma^2_{b}$ we do one final aggregation and model:
 ```{r}
 honey_agg2 <- honey_agg %>% 
   group_by(hive) %>% 
-  summarize(honey_avg2 = mean(honey_avg), .gropus = "drop")
+  summarize(honey_avg2 = mean(honey_avg), .groups = "drop")
 honey_agg2
 
 honey_hive <- lm(honey_avg2 ~ 1, data = honey_agg2); summary(honey_hive)
