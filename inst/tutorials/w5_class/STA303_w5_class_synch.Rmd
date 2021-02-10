@@ -657,7 +657,7 @@ Note 2: There are hints for some questions, but if you get really stuck, please 
 
 ## Question 1
 
-Suppose you have a dataset (`school1`) with 1000 students randomly sampled from the list of all students in Grade 8 in the Netherlands. Your data set has the following variables.
+Suppose you have a dataset (`school1`) with 1000 students randomly sampled from the list of all students in Grade 8 in the Netherlands. Your data set has the following variables:
 
 
 | Variable        | Description                                              |
@@ -668,22 +668,22 @@ Suppose you have a dataset (`school1`) with 1000 students randomly sampled from 
 | sex             | the student's sex, 1 if female, 0 if male                |
 | minority_status | 1 if the student is an ethnic minority, 0 otherwise      |
 
-Table: Variables in the school2 data set
+Table: Variables in the school1 data set
 
 You want to run the model `lm(test ~ iq + ses + sex + minority_status, data = school1)`.
 
 **From the description of the data alone, which one of the following statements is most appropriate?**
 
 **
-A. It seems appropriate to proceed with this linear regression (subject to further diagnostics).
-B. It does not seem appropriate to proceed with this linear regression because our independence assumption is likely to be violated.
-C. It does not seem appropriate to proceed with this linear regression because our assumption that the response is Normally distributed (at each combination of covariate levels) seems likely to be violated.
+A. It seems appropriate to proceed with this linear regression (subject to further diagnostics).  
+B. It does not seem appropriate to proceed with this linear regression because our independence assumption is likely to be violated.  
+C. It does not seem appropriate to proceed with this linear regression because our assumption that the response is Normally distributed (at each combination of covariate levels) seems likely to be violated.   
 D. It does not seem appropriate to proceed with linear regression because our suggested model is not actually linear in the parameters.
 **
 
 ## Question 2
 
-Suppose you have a dataset (`school2`) with 1000 students randomly sampled from the list of all students in Grade 8 in the Netherlands. Your data set has the following variables.
+Suppose you have a dataset (`school2`) with 1000 students randomly sampled from the list of all students in Grade 8 in the Netherlands. Your data set has the following variables:
 
 
 | Variable        | Description                                              |
@@ -701,9 +701,9 @@ You want to run the model `lm(pass ~ iq + ses + sex + minority_status, data = sc
 **From the description of the data alone, which one of the following statements is most appropriate?**
 
 **
-A. It seems appropriate to proceed with this linear regression (subject to further diagnostics).
-B. It does not seem appropriate to proceed with this linear regression because our independence assumption is likely to be violated.
-C. It does not seem appropriate to proceed with this linear regression because our assumption that the response is Normally distributed (at each combination of covariate levels) seems likely to be violated.
+A. It seems appropriate to proceed with this linear regression (subject to further diagnostics).  
+B. It does not seem appropriate to proceed with this linear regression because our independence assumption is likely to be violated.  
+C. It does not seem appropriate to proceed with this linear regression because our assumption that the response is Normally distributed (at each combination of covariate levels) seems likely to be violated.  
 D. It does not seem appropriate to proceed with linear regression because our suggested model is not actually linear in the parameters.
 **
 
@@ -1355,10 +1355,10 @@ You want to run the model `lm(test ~ iq + ses + sex + minority_status, data = sc
 **From the description of the data alone, which one of the following statements is most appropriate?**
 
 **
-A. It seems appropriate to proceed with this linear regression (subject to further diagnostics).
-B. It does not seem appropriate to proceed with this linear regression because our independence assumption is likely to be violated.
-C. It does not seem appropriate to proceed with this linear regression because our assumption that the response is Normally distributed (at each combination of covariate levels) seems likely to be violated.
-D. It does not seem appropriate to proceed with linear regression because our suggested model is not actually linear in the parameters.
+A. It seems appropriate to proceed with this linear regression (subject to further diagnostics).  
+B. It does not seem appropriate to proceed with this linear regression because our independence assumption is likely to be violated.  
+C. It does not seem appropriate to proceed with this linear regression because our assumption that the response is Normally distributed (at each combination of covariate levels) seems likely to be violated.  
+D. It does not seem appropriate to proceed with linear regression because our suggested model is not actually linear in the parameters.  
 **
 
 ## Question 4
@@ -1372,9 +1372,9 @@ Create a scatter plot to examine the relationship between verbal IQ scores (x) a
 ```
 
 ```{r scatter-hint-1}
-# fitler to the appropriate school with the following code:
+# filter to the appropriate school with the following code:
 school %>% 
-  filter(school %in% 1:20) %>% 
+  filter(school %in% 1:20)
 ```
 
 ```{r scatter-hint-2}
@@ -1382,7 +1382,7 @@ school %>%
 # facet_wrap(~school)
 ```
 
-```{r scatter-sol-ution, echo = FALSE}
+```{r scatter-sol-ution, include = FALSE}
 
 school %>% 
   filter(school %in% 1:20) %>% 
@@ -1401,15 +1401,17 @@ school %>%
 **
 A. 1  
 B. 9  
-C. 10
+C. 10  
 D. 15
 **
 
 ## Question 5
 
-Create two new variables in the data set, `mean_ses` that is the mean of `ses` for each school, and `mean_iq` that is mean of `iq` for each school. Save this new object as `school_new`.
+Create two new variables in the data set, `mean_ses` that is the mean of `ses` __for students at the school the student attends__, and `mean_iq` that is mean of `iq` __for students at the school the student attends__. Save this new object as `school_new`. (We want these variables because we're interested to know how being in a 'smarter' student body or higher/lower SES student body might influence students beyond their own levels of these variables. Think of these a school level effects.)
 
 Use `school_new` to fit a linear model with `test` as the response and use `iq`, `sex`, `ses`, `minority_status`, `mean_ses` and `mean_iq` as the covariates. Run `summary()` and `confint()` on the model you fit.
+
+This may take some time to run.
 
 ```{r, lm, exercise = TRUE}
 
@@ -1421,7 +1423,7 @@ Use `school_new` to fit a linear model with `test` as the response and use `iq`,
 ```
 
 
-```{r lm-sol-ution, echo=FALSE}
+```{r lm-sol-ution, include=FALSE}
 school_new <- school %>% 
   group_by(school) %>% 
   mutate(mean_ses = mean(ses), mean_iq = mean(iq))
@@ -1432,35 +1434,35 @@ summary(mod_lm)
 confint(mod_lm)
 ```
 
-Which ONE of the following statements is FALSE?
+**Which ONE of the following statements is FALSE?**
 
 **
 A. With 95% confidence, we can claim that for each one unit increase in IQ, students with had an average mark of 2.05 to 2.52 higher on the end-of-year language test.  
-B. Minority status was not statistically significant with it being believable that there was no difference in the average marks for minority and non-minority students.  
+B. Minority status was not statistically significant, with it being believable that there was no real difference in the average marks for minority and non-minority students.  
 C. Controlling for the other variables, students at schools with a higher average SES actually had slightly lower marks on average but students at schools with higher average IQ did somewhat better.  
 D. For minority, female students with 0 for the IQ and SES variables and at a school with 0 for the mean SES and mean IQ, with 95% confidence we can claim that their average end of year language score is between 37.84 and 39.07 marks.
 **
 
 ## Question 6
 
-Fit a linear mixed model with the same fixed effects as the previous question and with a random intercept for school. Call it `mod_lmm`.
+Fit a linear mixed model using the `school_new` data and with the same fixed effects as the previous question and now with a random intercept for school. Call it `mod_lmm`.
 
 Run `summary()` and `confint()` on the model you fit.
 
-```{r lmm, exercise = TRUE}
+```{r lmm, exercise = TRUE, exercise.setup = "lm"}
 
 ```
 
-```{r lmm-hint-1, exercise = TRUE}
+```{r lmm-hint-1}
 # the function you want is lmer (it is from the lme4 package which should already be loaded)
 # library(lme4)
 ```
 
-```{r lmm-hint-2, exercise = TRUE}
+```{r lmm-hint-2}
 # (1|school) is the random intercept term
 ```
 
-```{r lmm-sol-ution, exho = FALSE, exercise.setup = "lm"}
+```{r lmm-sol-ution, include = FALSE}
 mod_lmm <- lme4::lmer(test ~ iq + sex + ses + minority_status + mean_ses + mean_iq + (1|school), data = school_new)
 
 summary(mod_lmm)
@@ -1468,20 +1470,19 @@ confint(mod_lmm)
 confint(mod_lm)
 ```
 
-**What are the main differences between the inferences you's make from your LM vs your LMM?**
+**What are the main differences between the inferences you'd make from your LM vs your LMM?**
 
 **
-A. No systematic differences between the inferences you make for the fixed effects in each case.
-B. Similar conclusions, but the confidence intervals from the mixed model are more appropriate.
-C. Similar conclusions, but the confidence intervals for the linear model are better because they are slightly more precise.
+A. No systematic differences between the inferences you would make for the fixed effects in each case.  
+B. Similar conclusions, but the confidence intervals from the mixed model are more appropriate.  
+C. Similar conclusions, but the confidence intervals for the linear model are better because they are slightly more precise.  
 D. Cannot compare inferences.
 **
 
 
+## Question 7
 
-## Question 8
-
-There is a very convenient plotting function from the `lattice` package that makes it easy to visualize random effects. Note that we have a point estimate for each random effect AND a confidence interval around it. When we calculate a fitted value with out model, the point estimate of the random effect is added on for each school. You can think of the random intercept as being in the same units as the response.
+There is a very convenient plotting function from the `lattice` package that makes it easy to visualize random effects. Note that we have a point estimate for each random effect AND a confidence interval around it. When we calculate a fitted value with our model, the point estimate of the random effect is added on for each student based on their school. The random intercept is in the same units as the response.
 
 ```{r, echo=TRUE, fig.height=10, exercise.setup = "lmm"}
 lattice::dotplot(ranef(mod_lmm))
@@ -1490,8 +1491,8 @@ lattice::dotplot(ranef(mod_lmm))
 **While interpreting random effects isn't usually our main goal, suppose you were asked by the Dutch Ministry of Education, based on this information, to identify a school where students were under-performing after controlling for the other factors we've investigated. What would you say?**
 
 **
-A. There is no evidence of differences from school to school.
-B. School 39.  
-C. School 14. 
-D. School 21.
+A. There is no evidence of differences from school to school.  
+B. School 39.    
+C. School 14.   
+D. School 21.  
 **
