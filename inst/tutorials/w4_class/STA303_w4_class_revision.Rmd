@@ -411,7 +411,7 @@ C) Retrospective cohort.
 D) Case-control.
 **
 
-```{r q6, include=TRUE}
+```{r q7, include=TRUE}
 question("What is the correct answer?",
          answer("A"),
          answer("B"),
