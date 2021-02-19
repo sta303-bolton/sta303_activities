@@ -38,7 +38,7 @@ knitr::include_graphics("images/w4/statdewvalley.png")
 
 ## Instructions
 
-This is a revision task based on the Week 5 Team Up! activity. There are no bonus points for completing the task asynchronously, but I hope it might be a useful revision tool for you.
+This is a revision task based on the Week 4 Team Up! activity. There are no bonus points for completing the task asynchronously, but I hope it might be a useful revision tool for you.
 
 There are hints for some questions. In these cases the final hint is complete correct code.
 

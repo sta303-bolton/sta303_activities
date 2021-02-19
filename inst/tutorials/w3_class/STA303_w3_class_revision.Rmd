@@ -33,7 +33,7 @@ social_data <- read_csv("scraped_data.csv")
 
 ## Instructions
 
-This is a revision task based on the Week 2 Team Up! activity. There are no bonus points for completing the task asynchronously, but I hope it might be a useful revision tool for you.
+This is a revision task based on the Week 3 Team Up! activity. There are no bonus points for completing the task asynchronously, but I hope it might be a useful revision tool for you.
 
 There are hints for some questions. In these cases the final hint is complete correct code.
 
