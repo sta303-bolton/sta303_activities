@@ -1,5 +1,5 @@
 ---
-title: "STA303: W3 class activity"
+title: "STA303: W4 class activity"
 subtitle: "Return to Statdew Valley"
 output: learnr::tutorial
 css: "css/learnr_303.css"
@@ -8,7 +8,7 @@ runtime: shiny_prerendered
 
 ```{r setup, include = FALSE}
 # These are the packages you will need for this activity
-packages_needed <- c("tidyverse", "learnr", "polite", "rvest")
+packages_needed <- c("tidyverse", "learnr")
 
 package.check <- lapply(
   packages_needed,
@@ -38,16 +38,11 @@ knitr::include_graphics("images/w4/statdewvalley.png")
 
 ## Instructions
 
-To participate in this activity you will need have to two windows readily available to you:
+This is a revision task based on the Week 5 Team Up! activity. There are no bonus points for completing the task asynchronously, but I hope it might be a useful revision tool for you.
 
-1) Your Zoom window  
-2) The Team Up! activity linked from Quercus in a browser window for voting.
+There are hints for some questions. In these cases the final hint is complete correct code.
 
-I would recommend that one member of the team shares their screen with the rest of the team and shows this activity where you can see the question and options.
-
-Note 1: In the Team Up! activity you will just see the letters for the questions, not the options themselves. 
-
-Note 2: There are hints for some questions, but if you get really stuck, please use the 'Ask for Help' option in Zoom. 
+You can clear your answers and start again with the 'Start Over' button at the bottom of the menu. (I doubt this is well optimized for mobile, so if you can't see it, use a larger screen.)
 
 ## Data
 
@@ -100,7 +95,7 @@ strawberry <- tibble(patch = rep(LETTERS[1:18], each = 6),
 # Inside your ggplot() command, your aesthetic should look like this: aes(x = patch, y = yield, colour = treatment)
 ```
 
-```{r plot-sol-ution, echo=FALSE, eval = FALSE}
+```{r plot-solution, echo=FALSE, eval = FALSE}
 strawberry %>% 
   mutate(treatment = fct_relevel(treatment, "No netting", after = 0)) %>% 
   ggplot(aes(x = patch, y = yield, colour = treatment)) +
@@ -117,6 +112,15 @@ C. Patch K, no netting.
 D. Patch R, netting.  
 **
 
+```{r q1, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C"),
+         answer("D", correct = TRUE),
+         message = "See the final hint for the full code to generate the graph."
+)
+```
 
 
 ## Question 2
@@ -129,6 +133,16 @@ B. We should make patch a fixed effect and treatment a random effect.
 C. We should make patch a random effect and treatment a fixed effect and include a patch-treatment interaction (also a random effect).  
 D. We should make everything a random effect.
 **
+
+```{r q2, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C", correct = TRUE),
+         answer("D"),
+         message = "We want to interpret treatment, so it should be a fixed effect. We expect stawberries from the same patch to potentially be more similar to each other than strawberries across patches, i.e., correlated. We don't want to interpret patch effects, and it won't help us make predictions for new patches, but we shouldn't ignore the fact that it violates our assumptions of linear regression. Thus, we'll make patch a random effect. As each patch also undergoes each treatment, we're interested in accounting for interactions between patch and treatment as well."
+)
+```
 
 ## Question 3
 
@@ -150,6 +164,16 @@ C. 6
 D. 18
 **
 
+```{r q3, include=TRUE}
+question("What is the correct answer?",
+         answer("A", correct = TRUE),
+         answer("B"),
+         answer("C"),
+         answer("D"),
+         message = "Two, because there are two observations of each treatment on each patch."
+)
+```
+
 ## Question 4
 
 Suppose an appropriate model for this data is:
@@ -170,6 +194,16 @@ B. $\mu$ is the same for all values of i, j and k.
 C. There are three random quantities being estimated.  
 D. $b_j \sim N(0, \sigma_b^2)$ in this model.
 **
+
+```{r q4, include=TRUE}
+question("What is the correct answer?",
+         answer("A", correct = TRUE),
+         answer("B"),
+         answer("C"),
+         answer("D"),
+         message = "The interaction of a fixed effect and a random effect is ALSO a random effect, so A is not completely true."
+)
+```
 
 ## Question 5
 
@@ -263,14 +297,7 @@ summary(strawberry_int)$sigma^2
 
 ```
 
-**
-A. A is $\hat{\sigma}^2$, B is $\hat{\sigma}_b^2$, C is $\hat{\sigma}_{\alpha b}^2$.  
-B. A is $\hat{\sigma}_b^2$, B is $\hat{\sigma}^2$, C is $\hat{\sigma}_{\alpha b}^2$.  
-C. A is $\hat{\sigma}_{\alpha b}^2$, B is $\hat{\sigma}_b^2$, C is $\hat{\sigma}^2$.  
-D. A is $\hat{\sigma}_{\alpha b}^2$, B is __not__ actually one of the variances for our random effects, C is $\hat{\sigma}^2$.  
-**
-
-```{r, echo =FALSE, eval = FALSE}
+```{r, models-solution}
 strawberry_int <- lm(yield ~ treatment*patch, data = strawberry)
 summary(strawberry_int)
 
@@ -294,11 +321,28 @@ summary(strawberry_patch_mod)
 (summary(strawberry_agg_mod)$sigma^2 - (summary(strawberry_int)$sigma^2)/2)
 (summary(strawberry_patch_mod)$sigma^2 - (summary(strawberry_agg_mod)$sigma^2)/3)
 
-#summary(strawberry_patch)$sigma^2 - (summary(strawberry_main)$sigma^2 - (summary(strawberry_int)$sigma^2)/2)/3 - (summary(strawberry_patch)$sigma^2)/6
-
 mod <- lme4::lmer(yield ~ treatment + (1|patch) + (1|patch:treatment), data = strawberry)
 summary(mod)
 ```
+
+
+**
+A. A is $\hat{\sigma}^2$, B is $\hat{\sigma}_b^2$, C is $\hat{\sigma}_{\alpha b}^2$.  
+B. A is $\hat{\sigma}_b^2$, B is $\hat{\sigma}^2$, C is $\hat{\sigma}_{\alpha b}^2$.  
+C. A is $\hat{\sigma}_{\alpha b}^2$, B is $\hat{\sigma}_b^2$, C is $\hat{\sigma}^2$.  
+D. A is $\hat{\sigma}_{\alpha b}^2$, B is __not__ actually one of the variances for our random effects, C is $\hat{\sigma}^2$.  
+**
+
+```{r q5, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C", correct = TRUE),
+         answer("D"),
+         message = "See the hints for full discussion."
+)
+```
+
 
 
 ## Question 6
@@ -319,9 +363,19 @@ strawberry %>%
 **
 A. This dataset is also tidy for our purposes.  
 B. This dataset is NOT tidy for our purposes because each observational unit has too many observations.  
-C. This dataset is NOT tidy for our purposes because it is not the case that each value is in one any only one cell.  
-D. This dataset is NOT tidy for our purposes because it is not the case that each variable is in one any only one column.  
+C. This dataset is NOT tidy for our purposes because it is not the case that each value is in one and only one cell.  
+D. This dataset is NOT tidy for our purposes because it is not the case that each variable is in one and only one column.  
 **
+
+```{r q6, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C"),
+         answer("D", correct = TRUE),
+         message = "Treatment should be one column, not the levels of treatment split across several columns."
+)
+```
 
 ## Question 7
 
@@ -357,3 +411,12 @@ C) Retrospective cohort.
 D) Case-control.
 **
 
+```{r q6, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C"),
+         answer("D", correct = TRUE),
+         message = "Retrospective cohort study because the investigators do not randomly assign subjects to treatments (so not RCT), participants are selected based on exposure status (not outcome, so not case control) and both the exposure (glow cloud or not) and the outcome (multiplcation facts test score) occured in the past, before the study started (not prospective)."
+)
+```

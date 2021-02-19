@@ -69,7 +69,7 @@ __Use the output from the data section and/or go directly to the robots.txt for 
 
 **
 A) Not to scrape any of the website at all.  
-B) Limit the rate at which we scrape the page to 10 seconds per call.  
+B) Limit the rate at which we scrape to 10 seconds per call.  
 C) Not to crawl any pages that have more than a 10 second loading delay.  
 D) No specific aspects of ethical practice explicitly asked of us.
 **

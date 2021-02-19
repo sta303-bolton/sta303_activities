@@ -1,0 +1,240 @@
+---
+title: "STA303: W3 class activity"
+subtitle: "Professional practice for statisticians"
+output: learnr::tutorial
+css: "css/learnr_303.css"
+runtime: shiny_prerendered
+---
+
+```{r setup, include = FALSE}
+# These are the packages you will need for this activity
+packages_needed <- c("tidyverse", "learnr", "polite", "rvest")
+
+package.check <- lapply(
+  packages_needed,
+  FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+      install.packages(x, dependencies = TRUE, repos = "http://cran.us.r-project.org")
+    }
+  }
+)
+
+# Credit: package.check based on a helpful post from Vikram Baliga https://vbaliga.github.io/verify-that-r-packages-are-installed-and-loaded/
+
+library(learnr)
+library(tidyverse)
+library(lubridate) # to make it easy to work with dates
+library(ggthemes)
+
+knitr::opts_chunk$set(echo = FALSE)
+
+social_data <- read_csv("scraped_data.csv")
+```
+
+## Instructions
+
+This is a revision task based on the Week 2 Team Up! activity. There are no bonus points for completing the task asynchronously, but I hope it might be a useful revision tool for you.
+
+There are hints for some questions. In these cases the final hint is complete correct code.
+
+You can clear your answers and start again with the 'Start Over' button at the bottom of the menu. (I doubt this is well optimized for mobile, so if you can't see it, use a larger screen.)
+
+## Question 1
+
+These are the two packages I like to use for web scraping.
+```{r, message=FALSE, echo=TRUE}
+library(polite)
+library(rvest)
+```
+
+We're interested in scraping some data from the University of Toronto website. Specifically information on social media accounts: https://www.utoronto.ca/social-media-directory/all.
+
+In the web scraping video for this week, we talked about checking the robots.txt. We can use the `polite` package to check, from within R, whether it seems like this part of the site is allowed to be scraped, based on the robots.txt. 
+
+```{r bow, exercise=TRUE}
+session <- bow("https://www.utoronto.ca/social-media-directory/all", 
+               user_agent = "class activity for STA303, sta303@utoronto.ca")
+
+session
+```
+
+Note: I am setting the `user_agent` to have our contact details in case the web master wanted to get in touch to tell us we were causing issues.
+
+__Use the output from the data section and/or go directly to the robots.txt for U of T (https://www.utoronto.ca/robots.txt). Based on this, can you figure out what aspect of ethical practice U of T has explicitly asked of us?__
+
+**
+A) Not to scrape any of the website at all.  
+B) Limit the rate at which we scrape to 10 seconds per call.  
+C) Not to crawl any pages that have more than a 10 second loading delay.  
+D) No specific aspects of ethical practice explicitly asked of us.
+**
+
+```{r q1, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B", correct = TRUE),
+         answer("C"),
+         answer("D"),
+         message = "'Crawl delay: 10 sec' tells us that we should limit the rate at which we scrape. 'The path is scrapable for this user-agent' means there is nothing in the robots.txt that says we can't scrape this page (but there might be in the T&Cs)."
+)
+```
+
+## Question 2
+
+In addition to checking the robots.txt, what else do we need to consider as ethical scrapers?
+
+**
+A) Check if there is an API available instead.  
+B) Credit our source.  
+C) Only take what we need.  
+D) All of the above.
+**
+
+```{r q2, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C"),
+         answer("D", correct = TRUE),
+         message = "We should consider all of these things."
+)
+```
+
+## Question 3
+
+Below is the code I used to get the data. THIS CODE IS NOT BEING ASSESSED IN STA303. You aren't responsible for understanding it, but I thought some of you might be interested. 
+With the crawl delay it takes a while to run, so I have just given you the data directly in a csv file.
+
+
+```{r, eval = FALSE, echo=TRUE}
+pages <- map(1:21, ~scrape(session, query = list(page=.x)) )
+
+social_data <- map_dfr(pages, ~html_node(.x, css = ".view-content") %>% 
+  html_text() %>% 
+  str_split(pattern = "\\n") %>% 
+  unlist() %>%
+  as_tibble() %>% 
+  mutate(value = str_trim(value)) %>% 
+  filter(value != "") %>% 
+  mutate(type = if_else(grepl("http", value), "link", "group")) %>% 
+  mutate(group_name = if_else(type == "group", value, NULL)) %>% 
+  fill(group_name) %>% 
+  filter(type == "link") %>% 
+  select(group_name, value) %>% 
+  rename(link = "value")) %>% 
+  mutate(platform = str_remove(link, "https\\:\\/\\/")) %>% 
+  mutate(platform = str_remove(platform, "http\\:\\/\\/")) %>% 
+  mutate(platform = str_remove(platform, "www\\.")) %>% 
+  mutate(platform = str_split_fixed(platform, "\\.", 2)[,1]) 
+  
+write_csv(social_data, "scraped_data.csv")
+social_data <- read_csv("scraped_data.csv")
+```
+
+
+__Write code to determine what the most common social media platform used by U of T schools/departments/groups etc. is__
+
+```{r social-data, exercise = TRUE, warning=FALSE}
+glimpse(social_data)
+
+# your code here (week 2 content)
+
+```
+
+```{r social-data-solution}
+social_data %>% 
+  count(platform) %>% 
+  arrange(desc(n))
+
+# or
+
+table(social_data$platform)
+
+# or
+
+social_data %>% 
+  group_by(platform) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n))
+
+```
+
+**
+A) Facebook  
+B) Instagram  
+C) Twitter  
+D) YouTube
+**
+
+```{r q3, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C", correct = TRUE),
+         answer("D"),
+         message = "See solution code."
+)
+```
+
+## Question 4
+
+Suppose when enrolling in STA303 you were randomly assigned to either a mandatory synchronous class or a totally asynchronous pre-recorded class and then final grades were compared between the two groups. Which ONE of the following is TRUE?
+
+**
+A) Any differences in grades between the groups must be due to random chance because participants were randomly assigned.  
+B) Random assignment hopefully means the two groups are comparable across potential confounding variables, like previous preparation or convenience of time zone.  
+C) The fact the students have been randomly assigned means we could use this data as an empirical version of a null distribution for a hypothesis test.  
+D) As we have observed both the final grades and the group students were in, this is an example of a case-control study.
+**
+
+```{r q4, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B", correct = TRUE),
+         answer("C"),
+         answer("D"),
+         message = "The purpose of random assignment is to hopefully have the groups be as similar as possible across potential confounders so we can make causal claims."
+)
+```
+
+## Question 5
+
+Suppose a company wanted to understand how remote working was affecting their employees. In one of their staff surveys they had asked employees to rate their current sleep quality. 30 employees with generally poor sleep quality and 30 employees with generally excellent sleep quality were then invited to be part of a further study where they were asked whether or not they usually worked on their computer within 2 hours of their bedtime. The goal of the study was to understand if being exposed to the computer close to bedtime was associated with poor sleep quality. What kind of study is this?
+
+**
+A) Randomized control trial.  
+B) Prospective cohort study.  
+C) Retrospective cohort study.  
+D) Case-control study.  
+**
+
+```{r q5, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C"),
+         answer("D", correct = TRUE),
+         message = "Participants are recruited based on their outcome status (sleep quality) which makes this a case-control study."
+)
+```
+
+## Question 6
+
+Suppose U of T is currently recruiting as study participants students graduating with one of the following degrees in 2021: Statistics Specialist, Data Science Specialist, Actuarial Science Specialist. The goal of the study is to identify what students with these degrees are earning 5 years after graduating (2026) and whether there were any differences in their incomes by program. What kind of study is this?
+
+**
+A) Randomized control trial.  
+B) Prospective cohort study.  
+C) Retrospective cohort study.  
+D) Case-control study.
+**
+
+```{r q6, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B", correct = TRUE),
+         answer("C"),
+         answer("D"),
+         message = "Students are recruited based on exposure status (degree), not assigned by researchers (i.e., not an RCT), and the outcome will be observed in the future, so this is a prospective cohort study."
+)
+```
