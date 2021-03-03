@@ -1,0 +1,41 @@
+@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700);
+@import url(https://fonts.googleapis.com/css?family=Source+Code+Pro:400,700);
+@import url(https://fonts.googleapis.com/css?family=Overlock:400,700);
+
+body {
+  font-family: 'Source Sans Pro'; sans-serif;
+  font-weight: 400;
+  color: #333333;
+}
+h2 {
+  font-family: 'Overlock', sans-serif;
+  font-weight: 600;
+  color: #612464;
+  margin: 0em 0 0em 0;
+}
+h1, h3 {
+  font-family: 'Overlock', sans-serif;
+  font-weight: 600;
+  color: #612464;
+}
+a, a > code {
+  font-family: 'Source Sans Pro', sans-serif;
+  color: #612464;
+  text-decoration: none;
+}
+
+.button {
+  background-color: #612464; /* Purple */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
+
+.btn-primary, .btn-tutorial-run, .btn-primary:hover, .btn-primary:active, .btn-primary:visited {
+    background-color: #612464; /* Purple */
+}
+
