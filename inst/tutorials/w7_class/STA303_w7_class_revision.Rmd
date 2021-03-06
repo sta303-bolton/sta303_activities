@@ -1,0 +1,387 @@
+---
+title: "STA303: W7 class activity"
+subtitle: "Distributions, categorical variables and intro to GLMs"
+output: learnr::tutorial
+css: "css/learnr_303.css"
+runtime: shiny_prerendered
+---
+
+```{r setup, include = FALSE}
+# These are the packages you will need for this activity
+packages_needed <- c("tidyverse", "learnr")
+
+package.check <- lapply(
+  packages_needed,
+  FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+      install.packages(x, dependencies = TRUE, repos = "http://cran.us.r-project.org")
+    }
+  }
+)
+
+# Credit: package.check based on a helpful post from Vikram Baliga https://vbaliga.github.io/verify-that-r-packages-are-installed-and-loaded/
+
+library(learnr)
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = FALSE)
+
+avengers <- read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/avengers/avengers.csv")
+
+```
+
+## Instructions
+
+To participate in this activity you will need have to two windows readily available to you:
+
+1) Your Zoom window  
+2) The Team Up! activity linked from Quercus in a browser window for voting.
+
+I would recommend that one member of the team shares their screen with the rest of the team and shows this activity where you can see the question and options.
+
+Note 1: In the Team Up! activity you will just see the letters for the questions, not the options themselves. 
+
+Note 2: There are hints for some questions, but if you get really stuck, please use the 'Ask for Help' option in Zoom. 
+
+## The data
+
+```{r, echo=FALSE, fig.align='center', out.width="90%"}
+knitr::include_graphics("https://images.indianexpress.com/2021/01/wandavision-1200-1.jpg")
+```
+
+This data details the deaths of Marvel comic book characters between the time they joined the Avengers and April 30, 2015, the week before Secret Wars #1.
+
+It is sourced from [FiveThirtyEight on GitHub](https://github.com/fivethirtyeight/data/tree/master/avengers). [They wrote an article about it, too.](https://fivethirtyeight.com/features/avengers-death-comics-age-of-ultron/)
+
+Header | Definition
+---|---------
+`URL`| The URL of the comic character on the Marvel Wikia
+`Name/Alias` | The full name or alias of the character
+`Appearances` | The number of comic books that character appeared in as of April 30 
+`Current?` | Is the member currently active on an avengers affiliated team?
+`Gender` | The recorded gender of the character
+`Probationary` | Sometimes the character was given probationary status as an Avenger, this is the date that happened
+`Full/Reserve` | The month and year the character was introduced as a full or reserve member of the Avengers
+`Year` | The year the character was introduced as a full or reserve member of the Avengers
+`Years since joining` | 2015 minus the year
+`Honorary` | The status of the avenger, if they were given "Honorary" Avenger status, if they are simply in the "Academy," or "Full" otherwise
+`Death1` | Yes if the Avenger died, No if not. 
+`Return1` | Yes if the Avenger returned from their first death, No if  they did not, blank if not applicable
+`Death2` | Yes if the Avenger died a second time after their revival, No if they did not, blank if not applicable
+`Return2` | Yes if the Avenger returned from their second death, No if they did not, blank if not applicable
+`Death3` | Yes if the Avenger died a third time after their second revival, No if they did not, blank if not applicable
+`Return3` | Yes if the Avenger returned from their third death, No if they did not, blank if not applicable
+`Death4` | Yes if the Avenger died a fourth time after their third revival, No if they did not, blank if not applicable
+`Return4` | Yes if the Avenger returned from their fourth death, No if they did not, blank if not applicable
+`Death5` | Yes if the Avenger died a fifth time after their fourth revival, No if they did not, blank if not applicable
+`Return5` | Yes if the Avenger returned from their fifth death, No if they did not, blank if not applicable
+`Notes` | Descriptions of deaths and resurrections. 
+
+
+```{r}
+glimpse(avengers)
+```
+
+
+If the data isn't loading at any point, add this to your code chunk:
+```
+avengers <- read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/avengers/avengers.csv")
+```
+
+## Question 1
+
+Create a table of current (back in 2015, the time at which this data was collected) status vs `Death1` (if they have ever died). Assign it to the name `table1`. (`<-` is the assignment operator, you could also say 'save it as'.)
+
+Make `Death1` the column variable.
+
+```{r table, exercise = TRUE, exercise.setup = "setup"}
+
+```
+
+```{r table-hint-1}
+# If the data isn't loading, add this to your code
+avengers <- read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/avengers/avengers.csv")
+
+# If a variable name has spaces or other weird characters
+# you can put it in back ticks to have it run
+avengers$`Current?`
+```
+
+```{r table-hint-2}
+# The first variable will be your rows, the second your columns
+```
+
+```{r table-solution}
+table1 <- table(avengers$`Current?`, avengers$Death1)
+```
+
+How many of the current (as of 2015) Avengers characters have died at least once?
+
+**
+A. 25  
+B. 47       
+C. 44     
+D. 57  
+**
+
+```{r q1, include=TRUE}
+question("What is the correct answer?",
+         answer("A", correct = TRUE),
+         answer("B"),
+         answer("C"),
+         answer("D"),
+         message = "You want the yes/yes value from the table, if the table is constructed correctly."
+)
+```
+
+## Question 2
+
+What would be the appropriate code to find the conditional probability that an Avenger has died (at least once), given the fact that they are no longer an Avenger.
+
+```{r cond, exercise = TRUE, exercise.setup = "table"}
+# If you want to test the code here, you may need to copy your table code from the previous question
+```
+
+
+```{r cond-hint}
+# Margin 1 is rows, margin 2 is columns
+```
+
+```{r cond-solution}
+prop.table(table1, margin = 1)
+```
+
+Which line of code will achieve this?
+
+**
+A. `prop.table(table1, margin = 1)`  
+B. `prop.table(table1, margin = 2)`  
+C. `margin.table(table1, margin = 1)/sum(table1)`  
+D. `margin.table(table1, margin = 2)/sum(table1)`  
+**
+
+```{r q2, include=TRUE}
+question("What is the correct answer?",
+         answer("A", correct = TRUE),
+         answer("B"),
+         answer("C"),
+         answer("D"),
+         message = "With current status as the row variable of the table, you want margin 1 (rows) and prop.table() is the correct function."
+)
+```
+
+## Question 3
+
+What are the __odds__ of an Avengers character dying (at least once)? Note: this is regardless of current status.
+
+```{r odds, exercise = TRUE, exercise.setup = "table"}
+# You may wish to copy your table code in again. 
+```
+
+```{r, odds-hint}
+# To get the overall death counts you could run:
+margin.table(table1, margin = 2)
+
+# Or just run
+table(avengers$Death1)
+```
+
+
+**
+A. 0.40  
+B. 0.60  
+C. 0.66  
+D. 1.51  
+**
+
+```{r q3, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C", correct = TRUE),
+         answer("D"),
+         message = "69/104 (number who died / number who haven't died)"
+)
+```
+
+## Question 4
+
+What is the risk ratio of dying for current Avengers vs 'not current' Avengers?
+
+```{r risk, exercise = TRUE, exercise.setup = "table"}
+# You can do calculations here, if you like
+```
+
+**
+A. 0.57  
+B. 0.63  
+C. 1.21  
+D. 1.59  
+**
+
+```{r q4, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B", correct = TRUE),
+         answer("C"),
+         answer("D"),
+         message = "(25/(25+57))/(44/(44+47))"
+)
+```
+
+## Question 5
+
+Suppose I said I got an odds ratio of 1 when comparing deaths by gender (female, male in this dataset) for Avengers. Without any further information or calculations, which ONE of the following conclusions could you make?
+
+**
+A. The count of Avengers who have died at least once is the same for females and males.  
+B. The proportion of Avengers who have died at least once is the same for females and males.  
+C. One gender had 100% more deaths than the other.  
+D. There is a 50/50 chance that a given Avenger is a female who died vs a male who died.
+**
+
+```{r q5, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B", correct = TRUE),
+         answer("C"),
+         answer("D"),
+         message = "We cannot claim the counts are the same, but we can claim that the proportions should be the same as our numerator and denominator values must be the same. We can't say '100% more' because we can't comment on counts, and D incorrectly conditions on everyone being dead."
+)
+```
+
+## Question 6
+
+Fit an appropriate model to investigate the association of `Death1`, that has `Death1` as the response variable, and uses current status, gender and number of appearances in comics as the explanatory variables. 
+
+Save this model as `glm_mod` (i.e., assign it this name).
+
+Get 95% confidence intervals for the coefficients. (Code given.)
+
+
+```{r model, exercise = TRUE, exercise.setup = "setup"}
+# Convert y into 0s and 1s (1 = death)
+binary_y <- if_else(avengers$Death1 == "YES", 1, 0)
+# Your model here
+glm_mod <- glm(binary_y~_____________, ______________ , data = avengers)
+
+confint(glm_mod)
+```
+
+```{r model-hint-1}
+?glm
+```
+
+```{r model-hint-2}
+# You can tell R you want to do logistic regression (with the logit link)
+# with this statement inside your function
+family = binomial(link = "logit")
+```
+
+```{r model-solution}
+glm_mod <- glm(binary_y ~ `Current?` + Gender + Appearances, family = binomial(link = "logit"), data = avengers)
+
+confint(glm_mod)
+```
+
+Which ONE of the following claims is FALSE.
+
+**
+A. It is plausible that the baseline group (non-current, female avengers with 0 appearances) has odds of dying of 0.  
+B. When adjusted for gender and number of appearance, the odds of having died at least once is lower for current avengers than for 'not current' avengers.  
+C. At the 95% level, there is no evidence that male avengers have a higher odds of dying than female avengers, after accounting for current status and number of appearances.  
+D. Characters with more appearances in the comics have greater odds of dying, after controlling for current status and gender.
+**
+
+```{r q7, include=TRUE}
+question("What is the correct answer?",
+         answer("A", correct = TRUE),
+         answer("B"),
+         answer("C"),
+         answer("D"),
+         message = "A is false because it is plausible that the LOG odds are no different from 0, but when it comes to the odds scale (after exponentiating) it would be 1 we're claiming is in the interval."
+)
+```
+
+## Question 7
+
+What is this code doing?
+
+```{r center, exercise = TRUE, exercise.setup = "setup"}
+summary(avengers$Appearances)
+avengers$Appearances_c <- (avengers$Appearances - 132)/100
+```
+
+**
+A. Overwriting the `Appearances` variable with a version centered on the median number of appearances and rescaled to be in the 100s.  
+B. Creating a new binary variable where 0 indicates the person had the median number of appearances and 1 indicates they did not.  
+C. Creating a new numeric variable centered on the median number of appearances and rescaled to be in the 100s.  
+D. Creating a new data frame with just one vector, a centered version of the `Appearances` variable, rescaled to be in the 100s.
+**
+
+```{r q8, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B"),
+         answer("C", correct = TRUE),
+         answer("D"),
+         message = "132 is the median number of appearances. This code creates a new variable called Appearances_c that is centered on the median. We want to do this so that our intercept interpretation is more meaningful."
+)
+```
+
+## Question 8
+
+What is estimated percentage difference in odds of dying (at least once) for an Avenger with 100 more appearances than another (assuming gender and current status are the same for both).
+
+```{r final, exercise = TRUE, exercise.setup = "setup"}
+# Convert y into 0s and 1s (1 = death)
+binary_y <- if_else(avengers$Death1 == "YES", 1, 0)
+
+# From previous question
+avengers$Appearances_c <- (avengers$Appearances - 132)/100
+
+# Fit the model
+glm_mod_2 <- glm(binary_y ~ `Current?` + Gender + Appearances_c, family = binomial(link = "logit"), data = avengers)
+
+exp(summary(glm_mod_2)$coeff[,1])
+
+# You may want to add additional code, or not.
+```
+
+**
+A. The avenger with 100 more appearances has 8% _higher_ odds of having died at least once.  
+B. The avenger with 100 more appearances has 8% _lower_ odds of having died at least once.  
+C. The avenger with 100 more appearances has 108% _higher_ odds of having died at least once.  
+D. The avenger with 100 more appearances has 108% _lower_ odds of having died at least once.
+**
+
+```{r q9, include=TRUE}
+question("What is the correct answer?",
+         answer("A", correct = TRUE),
+         answer("B"),
+         answer("C"),
+         answer("D"),
+         message = "1.08 is the correct coefficient to interpret. Multiplication by 1.08 is an 8% increase. Our new centered and scaled variable means we can interpret this directly in this way."
+)
+```
+
+## Question 9
+
+Which one of the following is the most reasonable guess about the odds that Prof. B has been watching WandaVision?
+
+**
+A. Much great than 1  
+B. Slightly greater than 1  
+C. 1  
+D. Less than 1
+**
+
+```{r q10, include=TRUE}
+question("What is the correct answer?",
+         answer("A"),
+         answer("B", correct = TRUE),
+         answer("C"),
+         answer("D"),
+         message = "Odds much greater than 1 mean it is much more likely that I have been watching it than that I haven't. The before-class music was WandaVision songs, their comic picture is on the data page, and this was the whole inspiration for this week's data. It is a fairly safe bet that I've been watching WandaVision :D"
+)
+```
